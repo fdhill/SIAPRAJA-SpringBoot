@@ -1,6 +1,7 @@
 package com.example.siapraja.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,23 +19,31 @@ public class StudentService {
     @Autowired
     UserService userService;
 
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Student findById(Long id) {
         return studentRepository.findById(id).orElse(null);
     }
 
+    @Transactional(readOnly = true)
+    public Student findByUserId(Long userId) {
+        return studentRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Stundet not found!"));
+    }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public Iterable<Student> findAll() {
         return studentRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Student save(Student student) {
         User newUser = new User();
         newUser.setName(student.getName());
         newUser.setUsername(student.getNisn());
         newUser.setPassword(student.getNisn());
-        newUser.setRole(3);
+        newUser.setRole(2);
 
         User savedUser = userService.save(newUser);
 
@@ -47,6 +56,7 @@ public class StudentService {
         return studentRepository.saveAll(student);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Student edit(Long id, Student studentDetails) {
         Student existingStudent = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found"));

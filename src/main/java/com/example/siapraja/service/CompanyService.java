@@ -1,6 +1,7 @@
 package com.example.siapraja.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +19,24 @@ public class CompanyService {
     UserService userService;
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
     public Company findById(Long id) {
         return companyRepository.findById(id).orElse(null);
     }
 
     @Transactional(readOnly = true)
+    public Company findByUserId(Long id) {
+        return companyRepository.findByUserId(id)
+            .orElseThrow(() -> new RuntimeException("Stundet not found!"));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
     public Iterable<Company> findAll() {
         return companyRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Company save(Company company) {
         User newUser = new User();
         newUser.setName(company.getName());
@@ -45,19 +55,15 @@ public class CompanyService {
         return companyRepository.saveAll(company);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Company edit(Long id, Company companyDetails) {
-
         Company existingCompany = companyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new RuntimeException("Company with ID " + id + " not found"));
 
         existingCompany.setName(companyDetails.getName());
         existingCompany.setAddress(companyDetails.getAddress());
         existingCompany.setPhone(companyDetails.getPhone());
         existingCompany.setQuota(companyDetails.getQuota());
-
-        User user = existingCompany.getUser();
-        user.setName(companyDetails.getName());
-        userService.edit(user.getId(), user);
 
         return existingCompany;
     }

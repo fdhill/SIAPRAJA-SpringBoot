@@ -1,6 +1,7 @@
 package com.example.siapraja.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,22 +18,31 @@ public class TeacherService {
     @Autowired
     UserService userService;
 
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Teacher findById(Long id) {
         return teacherRepository.findById(id).orElse(null);
     }
 
     @Transactional(readOnly = true)
+    public Teacher findByUserId(Long id) {
+        return teacherRepository.findByUserId(id)
+            .orElseThrow(() -> new RuntimeException("Stundet not found!"));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
     public Iterable<Teacher> findAll() {
         return teacherRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Teacher save(Teacher teacher) {
         User newUser = new User();
         newUser.setName(teacher.getName());
         newUser.setUsername(teacher.getNip());
         newUser.setPassword(teacher.getNip());
-        newUser.setRole(3);
+        newUser.setRole(4);
 
         User savedUser = userService.save(newUser);
 
@@ -45,6 +55,7 @@ public class TeacherService {
         return teacherRepository.saveAll(teacher);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Teacher edit(Long id, Teacher teacherDetails) {
         Teacher existingTeacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));

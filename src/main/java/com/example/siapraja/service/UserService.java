@@ -1,6 +1,7 @@
 package com.example.siapraja.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
+
     public User save(User user) {
         if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -40,6 +42,7 @@ public class UserService {
         return userRepository.saveAll(user);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or #userDetails.id == authentication.principal.userId")
     public User edit(Long id, User userDetails) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));

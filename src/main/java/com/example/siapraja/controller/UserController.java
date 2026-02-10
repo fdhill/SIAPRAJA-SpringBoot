@@ -3,22 +3,27 @@ package com.example.siapraja.controller;
 import com.example.siapraja.dto.UserDTO;
 import com.example.siapraja.dto.ResponData;
 import com.example.siapraja.model.User;
+import com.example.siapraja.security.MyUserDetails;
 import com.example.siapraja.service.UserService;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    
-    @Autowired 
+
+    @Autowired
     UserService userService;
 
     @Autowired
@@ -43,7 +48,6 @@ public class UserController {
         responseData.getMessage().add("User created successfully");
         return ResponseEntity.ok(responseData);
     }
-    
 
     // CREATE ALL
 
@@ -61,7 +65,7 @@ public class UserController {
     public ResponseEntity<ResponData<User>> findById(@PathVariable("id") Long id) {
         ResponData<User> responseData = new ResponData<>();
         User user = userService.findById(id);
-        
+
         if (user == null) {
             responseData.setStatus(false);
             responseData.getMessage().add("User with ID " + id + " not found");
@@ -75,7 +79,8 @@ public class UserController {
 
     // EDIT / UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<ResponData<User>> update(@PathVariable("id") Long id, @Valid @RequestBody UserDTO userDTO, Errors errors) {
+    public ResponseEntity<ResponData<User>> update(@PathVariable("id") Long id, @Valid @RequestBody UserDTO userDTO,
+            Errors errors) {
         ResponData<User> responseData = new ResponData<>();
 
         if (errors.hasErrors()) {
@@ -97,5 +102,19 @@ public class UserController {
             responseData.getMessage().add(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
         }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal MyUserDetails currentUser) {
+        if (currentUser == null) {
+            return ResponseEntity.status(401).body("Belum login");
+        }
+
+        Map<String, Object> details = new HashMap<>();
+        details.put("username", currentUser.getUsername());
+        details.put("authorities", currentUser.getAuthorities());
+        details.put("userId", currentUser.getUserId());
+
+        return ResponseEntity.ok(details);
     }
 }
