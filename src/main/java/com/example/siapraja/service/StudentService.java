@@ -42,7 +42,7 @@ public class StudentService {
         User newUser = new User();
         newUser.setName(student.getName());
         newUser.setUsername(student.getNisn());
-        newUser.setPassword(student.getNisn());
+        newUser.setPassword("123456");
         newUser.setRole(2);
 
         User savedUser = userService.save(newUser);

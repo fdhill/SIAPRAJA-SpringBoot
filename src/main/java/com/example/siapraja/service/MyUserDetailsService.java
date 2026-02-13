@@ -20,6 +20,9 @@ public class MyUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User tidak ditemukan: " + username));
 
+        // Tambahkan log ini untuk debug:
+        System.out.println("User ditemukan: " + user.getUsername());
+        System.out.println("Password di DB: " + user.getPassword());
         return new MyUserDetails(user);
     }
 }

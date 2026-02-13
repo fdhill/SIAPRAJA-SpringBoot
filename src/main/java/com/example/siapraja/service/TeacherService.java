@@ -41,7 +41,7 @@ public class TeacherService {
         User newUser = new User();
         newUser.setName(teacher.getName());
         newUser.setUsername(teacher.getNip());
-        newUser.setPassword(teacher.getNip());
+        newUser.setPassword("123456");
         newUser.setRole(4);
 
         User savedUser = userService.save(newUser);
