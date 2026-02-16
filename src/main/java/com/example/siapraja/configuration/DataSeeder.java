@@ -31,8 +31,6 @@ public class DataSeeder {
                 return;
             }
 
-            // --- TRIK SAKTI: Masuk sebagai sistem (Admin) ---
-            // Ini agar method @PreAuthorize di Service tidak error
             SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken("system", null, 
                 AuthorityUtils.createAuthorityList("ROLE_ADMIN")) 

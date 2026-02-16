@@ -19,18 +19,19 @@ public class CompanyService {
     UserService userService;
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
+    @PreAuthorize("hasRole('ADMIN')")
     public Company findById(Long id) {
-        return companyRepository.findById(id).orElse(null);
+        return companyRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Company with id " + id + " not found!"));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Company findByUserId(Long id) {
         return companyRepository.findByUserId(id)
-            .orElseThrow(() -> new RuntimeException("Stundet not found!"));
+            .orElseThrow(() -> new RuntimeException("Company Profile not found"));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public Iterable<Company> findAll() {
         return companyRepository.findAll();
@@ -51,11 +52,7 @@ public class CompanyService {
         return companyRepository.save(company);
     }
 
-    public Iterable<Company> saveAll(Iterable<Company> company) {
-        return companyRepository.saveAll(company);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
     public Company edit(Long id, Company companyDetails) {
         Company existingCompany = companyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Company with ID " + id + " not found"));

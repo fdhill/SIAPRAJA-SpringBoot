@@ -18,7 +18,6 @@ public class MyUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Mengubah angka role di DB menjadi format Spring Security (ROLE_...)
         String roleName = switch (user.getRole()) {
             case 1 -> "ROLE_ADMIN";
             case 2 -> "ROLE_STUDENT";

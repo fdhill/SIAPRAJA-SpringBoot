@@ -55,7 +55,7 @@ public class TeacherService {
         return teacherRepository.saveAll(teacher);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
     public Teacher edit(Long id, Teacher teacherDetails) {
         Teacher existingTeacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));

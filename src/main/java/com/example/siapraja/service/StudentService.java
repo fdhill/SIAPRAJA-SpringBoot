@@ -56,7 +56,7 @@ public class StudentService {
         return studentRepository.saveAll(student);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
     public Student edit(Long id, Student studentDetails) {
         Student existingStudent = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
