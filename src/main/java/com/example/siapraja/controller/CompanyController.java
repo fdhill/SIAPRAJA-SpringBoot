@@ -43,7 +43,7 @@ public class CompanyController {
     }
 
     @GetMapping("/myprofile")
-    public ResponseEntity<ResponData<Company>> findByUserIdLogin(Authentication authentication) {
+    public ResponseEntity<ResponData<Company>> getMyProfile(Authentication authentication) {
         ResponData<Company> responseData = new ResponData<>();
 
         MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();

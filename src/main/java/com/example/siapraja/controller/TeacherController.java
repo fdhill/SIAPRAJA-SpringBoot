@@ -44,7 +44,7 @@ public class TeacherController {
     }
 
     @GetMapping("/myprofile")
-    public ResponseEntity<ResponData<Teacher>> getMyTeacher(@AuthenticationPrincipal MyUserDetails currentUser){
+    public ResponseEntity<ResponData<Teacher>> getMyProfile(@AuthenticationPrincipal MyUserDetails currentUser){
         ResponData<Teacher> responData = new ResponData<>();
 
         responData.setPayload(teacherService.findByUserId(currentUser.getUserId()));

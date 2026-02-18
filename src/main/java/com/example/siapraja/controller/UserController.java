@@ -7,9 +7,6 @@ import com.example.siapraja.security.MyUserDetails;
 import com.example.siapraja.service.UserService;
 import jakarta.validation.Valid;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -46,17 +43,12 @@ public class UserController {
     }
 
     @GetMapping("/myaccount")
-    public ResponseEntity<?> findByUserIdLogin(@AuthenticationPrincipal MyUserDetails currentUser) {
-        if (currentUser == null) {
-            return ResponseEntity.status(401).body("Belum login");
-        }
+    public ResponseEntity<ResponData<User>> getMyAccount(@AuthenticationPrincipal MyUserDetails currentUser){
+        ResponData<User> responData = new ResponData<>();
 
-        Map<String, Object> details = new HashMap<>();
-        details.put("username", currentUser.getUsername());
-        details.put("authorities", currentUser.getAuthorities());
-        details.put("userId", currentUser.getUserId());
-
-        return ResponseEntity.ok(details);
+        responData.setPayload(userService.findById(currentUser.getUserId()));
+        responData.setStatus(true);
+        return ResponseEntity.ok(responData);
     }
     
     @PostMapping
@@ -81,4 +73,19 @@ public class UserController {
         return ResponseEntity.ok(responseData);
     }
 
+    @PutMapping("/update-account")
+    public ResponseEntity<ResponData<User>> updateMyaccount(
+            @AuthenticationPrincipal MyUserDetails currentUser,
+            @Valid @RequestBody UserDTO userDTO) {
+
+        ResponData<User> responseData = new ResponData<>();
+
+        User userData = modelMapper.map(userDTO, User.class);
+
+        responseData.setPayload(userService.edit(currentUser.getUserId(), userData));
+        responseData.setStatus(true);
+        responseData.getMessage().add("Profile updated successfully");
+
+        return ResponseEntity.ok(responseData);
+    }
 }

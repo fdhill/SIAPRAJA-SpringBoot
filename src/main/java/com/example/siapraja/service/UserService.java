@@ -19,10 +19,10 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.userId")
     @Transactional(readOnly = true)
-    public User findById(Long id) {
-        return userRepository.findById(id).orElse(null);
+    public User findById(Long userId) {
+        return userRepository.findById(userId).orElse(null);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

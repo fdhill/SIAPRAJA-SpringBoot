@@ -44,7 +44,7 @@ public class StudentController {
     }
 
     @GetMapping("/myprofile")
-    public ResponseEntity<ResponData<Student>> findByUserIdLogin(Authentication authentication) {
+    public ResponseEntity<ResponData<Student>> getMyProfile(Authentication authentication) {
         ResponData<Student> responseData = new ResponData<>();
 
         MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
