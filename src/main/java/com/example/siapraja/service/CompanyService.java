@@ -25,7 +25,7 @@ public class CompanyService {
             .orElseThrow(() -> new RuntimeException("Company with id " + id + " not found!"));
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
+    @PreAuthorize("#id == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Company findByUserId(Long id) {
         return companyRepository.findByUserId(id)
@@ -52,10 +52,10 @@ public class CompanyService {
         return companyRepository.save(company);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
-    public Company edit(Long id, Company companyDetails) {
-        Company existingCompany = companyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Company with ID " + id + " not found"));
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('COMPANY') and #companyId == authentication.principal.companyId)")
+    public Company edit(Long companyId, Company companyDetails) {
+        Company existingCompany = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company with ID " + companyId + " not found"));
 
         existingCompany.setName(companyDetails.getName());
         existingCompany.setAddress(companyDetails.getAddress());

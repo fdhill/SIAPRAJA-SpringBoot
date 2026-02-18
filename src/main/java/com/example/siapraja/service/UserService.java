@@ -19,33 +19,35 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public User findById(Long id) {
         return userRepository.findById(id).orElse(null);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public Iterable<User> findAll() {
         return userRepository.findAll();
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     public User save(User user) {
         if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new RuntimeException("Username '" + user.getUsername() + "already used");
+        }
+
         return userRepository.save(user);
     }
 
-    public Iterable<User> saveAll(Iterable<User> user) {
-        return userRepository.saveAll(user);
-    }
-
-    @PreAuthorize("hasRole('ADMIN') or #userDetails.id == authentication.principal.userId")
-    public User edit(Long id, User userDetails) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.userId")
+    public User edit(Long userId, User userDetails) {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
         existingUser.setName(userDetails.getName());
 
@@ -63,7 +65,6 @@ public class UserService {
                 existingUser.setPassword(passwordEncoder.encode(userDetails.getPassword()));
             }
         }
-
         return existingUser;
     }
 

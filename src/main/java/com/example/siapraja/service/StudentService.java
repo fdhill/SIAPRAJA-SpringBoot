@@ -19,7 +19,12 @@ public class StudentService {
     @Autowired
     UserService userService;
 
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
+    public Iterable<Student> findAll() {
+        return studentRepository.findAll();
+    }
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public Student findById(Long id) {
         return studentRepository.findById(id).orElse(null);
@@ -29,12 +34,6 @@ public class StudentService {
     public Student findByUserId(Long userId) {
         return studentRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Stundet not found!"));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @Transactional(readOnly = true)
-    public Iterable<Student> findAll() {
-        return studentRepository.findAll();
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -56,20 +55,20 @@ public class StudentService {
         return studentRepository.saveAll(student);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
-    public Student edit(Long id, Student studentDetails) {
-        Student existingStudent = studentRepository.findById(id)
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
+    public Student edit(Long studentId, Student studentDetails) {
+        Student existingStudent = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         existingStudent.setName(studentDetails.getName());
-        existingStudent.setNisn(studentDetails.getNisn());
-        existingStudent.setAddress(studentDetails.getAddress());
-        existingStudent.setGender(studentDetails.getGender());
 
-        User user = existingStudent.getUser();
-        user.setName(studentDetails.getName());
-        user.setUsername(studentDetails.getNisn());
-        userService.edit(user.getId(), user);
+        if (studentDetails.getNisn()!= null && !studentRepository.existsByNisn(studentDetails.getNisn())) {
+            existingStudent.setNisn(studentDetails.getNisn());
+        }
+
+        existingStudent.setAddress(studentDetails.getAddress());
+        existingStudent.setClassroom(studentDetails.getClassroom());
+        existingStudent.setGender(studentDetails.getGender());
 
         return existingStudent;
     }

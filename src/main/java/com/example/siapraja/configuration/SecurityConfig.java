@@ -36,29 +36,29 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    // @Bean
-    // public SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider authProvider) throws Exception {
-    //     http
-    //             .csrf(csrf -> csrf.disable())
-    //             .authorizeHttpRequests(auth -> auth
-    //                     .requestMatchers("/api/auth/**").permitAll()
-    //                     .anyRequest().authenticated())
-    //             .authenticationProvider(authProvider)
-    //             .httpBasic(Customizer.withDefaults());
-
-    //     return http.build();
-    // }
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll() // Login HARUS diizinkan
-                        .anyRequest().authenticated() // Sisanya HARUS pakai token
-                );
+    public SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider authProvider) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .anyRequest().authenticated())
+                .authenticationProvider(authProvider)
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }
+
+    // @Bean
+    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    //     http.csrf(csrf -> csrf.disable())
+    //             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    //             .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll() // Login HARUS diizinkan
+    //                     .anyRequest().authenticated() // Sisanya HARUS pakai token
+    //             );
+
+    //     return http.build();
+    // }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {

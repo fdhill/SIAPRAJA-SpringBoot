@@ -8,4 +8,6 @@ import com.example.siapraja.model.Teacher;
 
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     public Optional<Teacher> findByUserId(Long userID);
+
+    boolean existsByNip(String nip);
 }

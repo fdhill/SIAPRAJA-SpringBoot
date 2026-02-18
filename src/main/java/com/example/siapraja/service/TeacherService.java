@@ -18,16 +18,17 @@ public class TeacherService {
     @Autowired
     UserService userService;
 
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public Teacher findById(Long id) {
         return teacherRepository.findById(id).orElse(null);
     }
 
+    @PreAuthorize("#id == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Teacher findByUserId(Long id) {
         return teacherRepository.findByUserId(id)
-            .orElseThrow(() -> new RuntimeException("Stundet not found!"));
+            .orElseThrow(() -> new RuntimeException("Teacher not found!"));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -51,24 +52,18 @@ public class TeacherService {
         return teacherRepository.save(teacher);
     }
 
-    public Iterable<Teacher> saveAll(Iterable<Teacher> teacher) {
-        return teacherRepository.saveAll(teacher);
-    }
-
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
-    public Teacher edit(Long id, Teacher teacherDetails) {
-        Teacher existingTeacher = teacherRepository.findById(id)
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('TEACHER') and #teacherId == authentication.principal.teacherId)")
+    public Teacher edit(Long teacherId, Teacher teacherDetails) {
+        Teacher existingTeacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
         existingTeacher.setName(teacherDetails.getName());
-        existingTeacher.setNip(teacherDetails.getNip());
+
+        if(teacherDetails.getNip() != null && !teacherRepository.existsByNip(teacherDetails.getNip())){
+            existingTeacher.setNip(teacherDetails.getNip());
+        }
         existingTeacher.setAddress(teacherDetails.getAddress());
         existingTeacher.setGender(teacherDetails.getGender());
-
-        User user = existingTeacher.getUser();
-        user.setName(teacherDetails.getName());
-        user.setUsername(teacherDetails.getNip());
-        userService.edit(user.getId(), user);
 
         return existingTeacher;
     }

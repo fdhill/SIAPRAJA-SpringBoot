@@ -4,8 +4,7 @@ import lombok.Data;
 
 @Data
 public class SubmissionDTO {
-    // @NotNull(message = "ID Student is required")
-    // private Long studentId;
+    private Long studentId;
 
     @NotNull(message = "ID Company is required")
     private Long companyId;

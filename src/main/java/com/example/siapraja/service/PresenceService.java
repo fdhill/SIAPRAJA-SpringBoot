@@ -20,10 +20,10 @@ public class PresenceService {
     @Autowired
     private MonitoringService monitoringService;
 
-    public Presence checkIn(Presence presence, Long idStudent) {
+    public Presence checkIn(Presence presence, Long idUser) {
         LocalDate today = LocalDate.now();
 
-        Monitoring monitoring = monitoringService.findByStudentId(idStudent);
+        Monitoring monitoring = monitoringService.findStudentMonitoringByIdUser(idUser);
 
         if (presenceRepository.findByMonitoringIdAndDate(monitoring.getId(), today).isPresent()) {
             throw new RuntimeException("You have already checked in today!");
@@ -39,10 +39,10 @@ public class PresenceService {
         return presenceRepository.save(presence);
     }
 
-    public Presence checkOut(Long idStudent) {
+    public Presence checkOut(Long idUser) {
         LocalDate today = LocalDate.now();
 
-        Monitoring monitoring = monitoringService.findByStudentId(idStudent);
+        Monitoring monitoring = monitoringService.findByStudentId(idUser);
 
         Presence presence = presenceRepository.findByMonitoringIdAndDate(monitoring.getId(), today)
                 .orElseThrow(() -> new RuntimeException("Anda belum melakukan check-in hari ini!"));
@@ -55,5 +55,10 @@ public class PresenceService {
     @Transactional(readOnly = true)
     public Iterable<Presence> getHistoryByMonitoring(Long monitoringId) {
         return presenceRepository.findByMonitoringIdOrderByDateDesc(monitoringId);
+    }
+
+    @Transactional(readOnly = true)
+    public Iterable<Presence> findMyPresenceHistory(Long userId) {
+        return presenceRepository.findByMonitoring_Student_User_Id(userId);
     }
 }

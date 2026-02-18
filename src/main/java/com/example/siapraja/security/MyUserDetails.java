@@ -1,5 +1,8 @@
 package com.example.siapraja.security;
 
+import com.example.siapraja.model.Company;
+import com.example.siapraja.model.Student;
+import com.example.siapraja.model.Teacher;
 import com.example.siapraja.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,9 +14,11 @@ import java.util.Collections;
 public class MyUserDetails implements UserDetails {
 
     private final User user;
+    private Object profile;
 
-    public MyUserDetails(User user) {
+    public MyUserDetails(User user, Object profile) {
         this.user = user;
+        this.profile = profile;
     }
 
     @Override
@@ -38,12 +43,56 @@ public class MyUserDetails implements UserDetails {
         return user.getUsername();
     }
 
-    @Override public boolean isAccountNonExpired() { return true; }
-    @Override public boolean isAccountNonLocked() { return true; }
-    @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled() { return true; }
-
     public Long getUserId() {
         return user.getId();
+    }
+
+    public Long getStudentId() {
+        if (profile instanceof Student) {
+            return ((Student) profile).getId();
+        }
+        return null;
+    }
+
+    public Long getTeacherId() {
+        if (profile instanceof Teacher) {
+            return ((Teacher) profile).getId();
+        }
+        return null;
+    }
+
+    public Long getCompanyId() {
+        if (profile instanceof Company) {
+            return ((Company) profile).getId();
+        }
+        return null;
+    }
+
+    public Object getProfile() {
+        return profile;
+    }
+
+    public <T> T getProfileAs(Class<T> clazz) {
+        return clazz.isInstance(profile) ? clazz.cast(profile) : null;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
