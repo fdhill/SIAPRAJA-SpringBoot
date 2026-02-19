@@ -13,11 +13,11 @@ public interface MonitoringRepository extends JpaRepository<Monitoring, Long> {
 
     Iterable<Monitoring> findByCompanyId(Long companyId);
 
-    Optional<Monitoring> findByStudent_User_Id(Long userId);
+    // Optional<Monitoring> findByStudent_User_Id(Long userId);
 
-    Optional<Monitoring> findByTeacher_User_Id(Long userId);
+    // Optional<Monitoring> findByTeacher_User_Id(Long userId);
 
-    Optional<Monitoring> findByCompany_User_Id(Long userId);
+    // Optional<Monitoring> findByCompany_User_Id(Long userId);
 
     Iterable<Monitoring> findByStudent_User_IdOrTeacher_User_IdOrCompany_User_Id(
             Long studentUserId,

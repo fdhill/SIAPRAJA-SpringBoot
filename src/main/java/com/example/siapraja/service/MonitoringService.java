@@ -17,6 +17,12 @@ public class MonitoringService {
     @Autowired
     private MonitoringRepository monitoringRepository;
 
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN')")
+    public Iterable<Monitoring> findAll() {
+        return monitoringRepository.findAll();
+    }
+
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Monitoring findById(Long id) {
@@ -24,25 +30,19 @@ public class MonitoringService {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN')")
-    public Iterable<Monitoring> findAll() {
-        return monitoringRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
     public Monitoring findByStudentId(Long studentId) {
         return monitoringRepository.findByStudentId(studentId).orElse(null);
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('TEACHER') and #teacherId == authentication.principal.teacherId)")
     public Iterable<Monitoring> findByTeacherId(Long teacherId) {
         return monitoringRepository.findByTeacherId(teacherId);
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('COMPANY') and #companyId == authentication.principal.companyId)")
     public Iterable<Monitoring> findByCompanyId(Long companyId) {
         return monitoringRepository.findByCompanyId(companyId);
     }
@@ -53,10 +53,7 @@ public class MonitoringService {
         return monitoringRepository.findByStudent_User_IdOrTeacher_User_IdOrCompany_User_Id(userId, userId, userId);
     }
 
-    public Monitoring findStudentMonitoringByIdUser(Long iduser){
-        return monitoringRepository.findByStudent_User_Id(iduser).orElseThrow(() -> new RuntimeException("Monitoring with student user ID " + iduser + " not found"));
-    }
-
+    @PreAuthorize("hasRole('ADMIN')")
     public Monitoring save(Monitoring monitoring) {
         return monitoringRepository.save(monitoring);
     }
@@ -85,7 +82,7 @@ public class MonitoringService {
         return monitoringRepository.save(existing);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #studentId == authentication.principal.userId")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
     public void setMonitoringStartDate(Long id, LocalDate startDate) {
         Monitoring monitoring = findById(id);
         if (monitoring.getStartDate() == null) {

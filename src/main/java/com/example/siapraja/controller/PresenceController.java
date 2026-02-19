@@ -51,16 +51,16 @@ public class PresenceController {
         return ResponseEntity.ok(responseData);
     }
 
-    @PostMapping("/checkin")
-    public ResponseEntity<ResponData<Presence>> checkIn(@Valid @RequestBody PresenceDTO presenceDTO, @AuthenticationPrincipal MyUserDetails currentUser, Errors errors) {
-        ResponData<Presence> responseData = new ResponData<>();
+    // @PostMapping("/checkin")
+    // public ResponseEntity<ResponData<Presence>> checkIn(@Valid @RequestBody PresenceDTO presenceDTO, @AuthenticationPrincipal MyUserDetails currentUser, Errors errors) {
+    //     ResponData<Presence> responseData = new ResponData<>();
 
-        Presence presence = modelMapper.map(presenceDTO, Presence.class);
-        responseData.setStatus(true);
-        responseData.setPayload(presenceService.checkIn(presence, currentUser.getUserId()));
-        responseData.setMessage(Collections.singletonList("Check-in successful"));
-        return ResponseEntity.ok(responseData);
-    }
+    //     Presence presence = modelMapper.map(presenceDTO, Presence.class);
+    //     responseData.setStatus(true);
+    //     responseData.setPayload(presenceService.checkIn(presence, currentUser.getUserId()));
+    //     responseData.setMessage(Collections.singletonList("Check-in successful"));
+    //     return ResponseEntity.ok(responseData);
+    // }
 
     @PutMapping("/checkout")
     public ResponseEntity<ResponData<Presence>> checkOut(@AuthenticationPrincipal MyUserDetails currentUser) {

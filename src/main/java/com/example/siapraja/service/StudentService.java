@@ -24,7 +24,8 @@ public class StudentService {
     public Iterable<Student> findAll() {
         return studentRepository.findAll();
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
     @Transactional(readOnly = true)
     public Student findById(Long id) {
         return studentRepository.findById(id).orElse(null);

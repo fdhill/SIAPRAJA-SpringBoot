@@ -10,9 +10,9 @@ import com.example.siapraja.service.MonitoringService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/api/monitorings")
@@ -51,7 +51,7 @@ public class MonitoringController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponData<Monitoring>> create(@Valid @RequestBody MonitoringDTO monitoringDTO, Errors errors) {
+    public ResponseEntity<ResponData<Monitoring>> create(@Valid @RequestBody MonitoringDTO monitoringDTO) {
         ResponData<Monitoring> responseData = new ResponData<>();
 
         Monitoring monitoring = new Monitoring();
@@ -72,10 +72,10 @@ public class MonitoringController {
         return ResponseEntity.ok(responseData);
     }
 
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<ResponData<Monitoring>> findByStudentId(@PathVariable("studentId") Long studentId) {
+    @GetMapping("/student/mymonitoring")
+    public ResponseEntity<ResponData<Monitoring>> findByStudentId(@AuthenticationPrincipal MyUserDetails currentUser) {
         ResponData<Monitoring> responseData = new ResponData<>();
-        Monitoring monitoring = monitoringService.findByStudentId(studentId);
+        Monitoring monitoring = monitoringService.findByStudentId(currentUser.getStudentId());
 
         responseData.setStatus(true);
         responseData.setPayload(monitoring);
@@ -83,20 +83,20 @@ public class MonitoringController {
         return ResponseEntity.ok(responseData);
     }
 
-    @GetMapping("/teacher/{teacherId}")
-    public ResponseEntity<ResponData<Iterable<Monitoring>>> findByTeacherId(@PathVariable("teacherId") Long teacherId) {
+    @GetMapping("/teacher/mymonitoring")
+    public ResponseEntity<ResponData<Iterable<Monitoring>>> findByTeacherId(@AuthenticationPrincipal MyUserDetails currentUser) {
         ResponData<Iterable<Monitoring>> responseData = new ResponData<>();
-        Iterable<Monitoring> data = monitoringService.findByTeacherId(teacherId);
+        Iterable<Monitoring> data = monitoringService.findByTeacherId(currentUser.getTeacherId());
 
         responseData.setPayload(data);
         responseData.setStatus(true);
         return ResponseEntity.ok(responseData);
     }
 
-    @GetMapping("/company/{companyId}")
-    public ResponseEntity<ResponData<Iterable<Monitoring>>> findByCompanyId(@PathVariable("companyId") Long companyId) {
+    @GetMapping("/company/mymonitoring")
+    public ResponseEntity<ResponData<Iterable<Monitoring>>> findByCompanyId(@AuthenticationPrincipal MyUserDetails currentUser) {
         ResponData<Iterable<Monitoring>> responseData = new ResponData<>();
-        Iterable<Monitoring> data = monitoringService.findByCompanyId(companyId);
+        Iterable<Monitoring> data = monitoringService.findByCompanyId(currentUser.getCompanyId());
 
         responseData.setPayload(data);
         responseData.setStatus(true);

@@ -51,16 +51,14 @@ public class SubmissionService {
         return false;
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT') or #userId == authentication.principal.userId")
-    public Submission processApply(Long userId, Long companyId) {
-        Student student = studentService.findByUserId(userId);
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
+    public Submission processApply(Long studentId, Long companyId) {
+        Student student = studentService.findById(studentId);
+        Company company = companyService.findById(companyId);
 
         if (submissionRepository.hasActiveSubmission(student.getId())) {
             throw new RuntimeException("You cannot apply. You have a pending application or you are already accepted.");
-        }
-        
-        Company company = companyService.findById(companyId);
-
+        } 
         if (company == null) throw new RuntimeException("Company not found.");
         if (company.getQuota() < 1) {
             throw new RuntimeException("Sorry, this company's quota is full.");
