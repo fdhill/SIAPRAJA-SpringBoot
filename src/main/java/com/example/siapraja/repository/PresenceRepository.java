@@ -16,5 +16,5 @@ public interface PresenceRepository extends JpaRepository<Presence, Long>{
 
     Iterable<Presence> findByMonitoringIdAndStatus(Long monitoringId, int status);
 
-    Iterable<Presence> findByMonitoring_Student_User_Id(Long userId);
+    Iterable<Presence> findByMonitoring_StudentId(Long studentId);
 }

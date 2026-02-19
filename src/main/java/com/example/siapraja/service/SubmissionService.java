@@ -79,6 +79,9 @@ public class SubmissionService {
                 .orElseThrow(() -> new RuntimeException("Submission not found"));
 
         Company company = sub.getCompany();
+        if(sub.getStatus()!= 1){
+            throw new RuntimeException("Cannot accept.");
+        }
         if (company.getQuota() < 1) {
             throw new RuntimeException("Cannot accept. Company quota is now exhausted.");
         }
@@ -99,6 +102,10 @@ public class SubmissionService {
     public void reject(Long idSubmission) {
         Submission sub = submissionRepository.findById(idSubmission)
                 .orElseThrow(() -> new RuntimeException("Submission not found"));
+        
+        if(sub.getStatus()!= 1){
+            throw new RuntimeException("Cannot reject.");
+        }
         sub.setStatus(3);
     }
 }

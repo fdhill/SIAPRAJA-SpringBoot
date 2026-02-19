@@ -27,10 +27,11 @@ public class StudentService {
     
     @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
     @Transactional(readOnly = true)
-    public Student findById(Long id) {
-        return studentRepository.findById(id).orElse(null);
+    public Student findById(Long studentId) {
+        return studentRepository.findById(studentId).orElse(null);
     }
 
+    @PreAuthorize("#userId == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Student findByUserId(Long userId) {
         return studentRepository.findByUserId(userId)

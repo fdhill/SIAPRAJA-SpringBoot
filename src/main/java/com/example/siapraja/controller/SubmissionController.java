@@ -60,17 +60,17 @@ public class SubmissionController {
         return ResponseEntity.ok(responseData);
     }
 
-    @PutMapping("/{id}/accept")
+    @PutMapping("/accept/{id}")
     public ResponseEntity<ResponData<String>> accept(@PathVariable Long id) {
         ResponData<String> response = new ResponData<>();
 
         submissionService.accept(id);
         response.setStatus(true);
-        response.setMessage(Collections.singletonList("Submission accepted"));
+        response.setMessage(Collections.singletonList("Submission accepted & making monitoring"));
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}/reject")
+    @PutMapping("/reject/{id}")
     public ResponseEntity<ResponData<String>> reject(@PathVariable Long id) {
         ResponData<String> response = new ResponData<>();
         submissionService.reject(id);

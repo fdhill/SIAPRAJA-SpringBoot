@@ -23,7 +23,7 @@ public class MonitoringService {
         return monitoringRepository.findAll();
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.userId")
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public Monitoring findById(Long id) {
         return monitoringRepository.findById(id).orElse(null);
@@ -83,8 +83,8 @@ public class MonitoringService {
     }
 
     @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
-    public void setMonitoringStartDate(Long id, LocalDate startDate) {
-        Monitoring monitoring = findById(id);
+    public void setMonitoringStartDate(Long studentId, LocalDate startDate) {
+        Monitoring monitoring = findByStudentId(studentId);
         if (monitoring.getStartDate() == null) {
             monitoring.setStartDate(startDate);
         }

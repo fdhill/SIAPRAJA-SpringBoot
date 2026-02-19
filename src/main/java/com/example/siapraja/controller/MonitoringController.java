@@ -50,28 +50,6 @@ public class MonitoringController {
         return ResponseEntity.ok(responseData);
     }
 
-    @PostMapping
-    public ResponseEntity<ResponData<Monitoring>> create(@Valid @RequestBody MonitoringDTO monitoringDTO) {
-        ResponData<Monitoring> responseData = new ResponData<>();
-
-        Monitoring monitoring = new Monitoring();
-
-        Student student = new Student();
-        student.setId(monitoringDTO.getStudentId());
-        monitoring.setStudent(student);
-
-        Company company = new Company();
-        company.setId(monitoringDTO.getCompanyId());
-        monitoring.setCompany(company);
-
-        Monitoring savedMonitoring = monitoringService.save(monitoring);
-
-        responseData.setStatus(true);
-        responseData.setPayload(savedMonitoring);
-        responseData.getMessage().add("Monitoring record created successfully");
-        return ResponseEntity.ok(responseData);
-    }
-
     @GetMapping("/student/mymonitoring")
     public ResponseEntity<ResponData<Monitoring>> findByStudentId(@AuthenticationPrincipal MyUserDetails currentUser) {
         ResponData<Monitoring> responseData = new ResponData<>();
@@ -100,6 +78,28 @@ public class MonitoringController {
 
         responseData.setPayload(data);
         responseData.setStatus(true);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping
+    public ResponseEntity<ResponData<Monitoring>> create(@Valid @RequestBody MonitoringDTO monitoringDTO) {
+        ResponData<Monitoring> responseData = new ResponData<>();
+
+        Monitoring monitoring = new Monitoring();
+
+        Student student = new Student();
+        student.setId(monitoringDTO.getStudentId());
+        monitoring.setStudent(student);
+
+        Company company = new Company();
+        company.setId(monitoringDTO.getCompanyId());
+        monitoring.setCompany(company);
+
+        Monitoring savedMonitoring = monitoringService.save(monitoring);
+
+        responseData.setStatus(true);
+        responseData.setPayload(savedMonitoring);
+        responseData.getMessage().add("Monitoring record created successfully");
         return ResponseEntity.ok(responseData);
     }
 
