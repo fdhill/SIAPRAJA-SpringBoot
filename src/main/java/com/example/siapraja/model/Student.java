@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "student")
+@Table(name = "students")
 @Data // Otomatis membuat Getter, Setter, toString, equals, dan hashCode
 @NoArgsConstructor // Membuat constructor kosong (wajib untuk JPA)
 @AllArgsConstructor // Membuat constructor dengan semua field

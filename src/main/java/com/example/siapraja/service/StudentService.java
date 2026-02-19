@@ -1,6 +1,7 @@
 package com.example.siapraja.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,23 +19,30 @@ public class StudentService {
     @Autowired
     UserService userService;
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
+    public Iterable<Student> findAll() {
+        return studentRepository.findAll();
+    }
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public Student findById(Long id) {
         return studentRepository.findById(id).orElse(null);
     }
 
-
     @Transactional(readOnly = true)
-    public Iterable<Student> findAll() {
-        return studentRepository.findAll();
+    public Student findByUserId(Long userId) {
+        return studentRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Stundet not found!"));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Student save(Student student) {
         User newUser = new User();
         newUser.setName(student.getName());
         newUser.setUsername(student.getNisn());
-        newUser.setPassword(student.getNisn());
-        newUser.setRole(3);
+        newUser.setPassword("123456");
+        newUser.setRole(2);
 
         User savedUser = userService.save(newUser);
 
@@ -47,19 +55,20 @@ public class StudentService {
         return studentRepository.saveAll(student);
     }
 
-    public Student edit(Long id, Student studentDetails) {
-        Student existingStudent = studentRepository.findById(id)
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
+    public Student edit(Long studentId, Student studentDetails) {
+        Student existingStudent = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         existingStudent.setName(studentDetails.getName());
-        existingStudent.setNisn(studentDetails.getNisn());
-        existingStudent.setAddress(studentDetails.getAddress());
-        existingStudent.setGender(studentDetails.getGender());
 
-        User user = existingStudent.getUser();
-        user.setName(studentDetails.getName());
-        user.setUsername(studentDetails.getNisn());
-        userService.edit(user.getId(), user);
+        if (studentDetails.getNisn()!= null && !studentRepository.existsByNisn(studentDetails.getNisn())) {
+            existingStudent.setNisn(studentDetails.getNisn());
+        }
+
+        existingStudent.setAddress(studentDetails.getAddress());
+        existingStudent.setClassroom(studentDetails.getClassroom());
+        existingStudent.setGender(studentDetails.getGender());
 
         return existingStudent;
     }

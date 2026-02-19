@@ -1,7 +1,9 @@
 package com.example.siapraja.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
+@Data
 public class TeacherDTO {
 
     @NotBlank(message = "Teacher name is required")

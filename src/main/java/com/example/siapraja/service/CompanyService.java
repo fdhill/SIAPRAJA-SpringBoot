@@ -1,6 +1,7 @@
 package com.example.siapraja.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +19,17 @@ public class CompanyService {
     UserService userService;
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN')")
     public Company findById(Long id) {
-        return companyRepository.findById(id).orElse(null);
+        return companyRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Company with id " + id + " not found!"));
+    }
+
+    @PreAuthorize("#id == authentication.principal.userId")
+    @Transactional(readOnly = true)
+    public Company findByUserId(Long id) {
+        return companyRepository.findByUserId(id)
+            .orElseThrow(() -> new RuntimeException("Company Profile not found"));
     }
 
     @Transactional(readOnly = true)
@@ -27,6 +37,7 @@ public class CompanyService {
         return companyRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Company save(Company company) {
         User newUser = new User();
         newUser.setName(company.getName());
@@ -41,23 +52,15 @@ public class CompanyService {
         return companyRepository.save(company);
     }
 
-    public Iterable<Company> saveAll(Iterable<Company> company) {
-        return companyRepository.saveAll(company);
-    }
-
-    public Company edit(Long id, Company companyDetails) {
-
-        Company existingCompany = companyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('COMPANY') and #companyId == authentication.principal.companyId)")
+    public Company edit(Long companyId, Company companyDetails) {
+        Company existingCompany = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company with ID " + companyId + " not found"));
 
         existingCompany.setName(companyDetails.getName());
         existingCompany.setAddress(companyDetails.getAddress());
         existingCompany.setPhone(companyDetails.getPhone());
         existingCompany.setQuota(companyDetails.getQuota());
-
-        User user = existingCompany.getUser();
-        user.setName(companyDetails.getName());
-        userService.edit(user.getId(), user);
 
         return existingCompany;
     }

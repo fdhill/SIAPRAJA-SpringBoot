@@ -1,6 +1,7 @@
 package com.example.siapraja.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,22 +18,32 @@ public class TeacherService {
     @Autowired
     UserService userService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public Teacher findById(Long id) {
         return teacherRepository.findById(id).orElse(null);
     }
 
+    @PreAuthorize("#id == authentication.principal.userId")
+    @Transactional(readOnly = true)
+    public Teacher findByUserId(Long id) {
+        return teacherRepository.findByUserId(id)
+            .orElseThrow(() -> new RuntimeException("Teacher not found!"));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
     public Iterable<Teacher> findAll() {
         return teacherRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public Teacher save(Teacher teacher) {
         User newUser = new User();
         newUser.setName(teacher.getName());
         newUser.setUsername(teacher.getNip());
-        newUser.setPassword(teacher.getNip());
-        newUser.setRole(3);
+        newUser.setPassword("123456");
+        newUser.setRole(4);
 
         User savedUser = userService.save(newUser);
 
@@ -41,23 +52,18 @@ public class TeacherService {
         return teacherRepository.save(teacher);
     }
 
-    public Iterable<Teacher> saveAll(Iterable<Teacher> teacher) {
-        return teacherRepository.saveAll(teacher);
-    }
-
-    public Teacher edit(Long id, Teacher teacherDetails) {
-        Teacher existingTeacher = teacherRepository.findById(id)
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('TEACHER') and #teacherId == authentication.principal.teacherId)")
+    public Teacher edit(Long teacherId, Teacher teacherDetails) {
+        Teacher existingTeacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
         existingTeacher.setName(teacherDetails.getName());
-        existingTeacher.setNip(teacherDetails.getNip());
+
+        if(teacherDetails.getNip() != null && !teacherRepository.existsByNip(teacherDetails.getNip())){
+            existingTeacher.setNip(teacherDetails.getNip());
+        }
         existingTeacher.setAddress(teacherDetails.getAddress());
         existingTeacher.setGender(teacherDetails.getGender());
-
-        User user = existingTeacher.getUser();
-        user.setName(teacherDetails.getName());
-        user.setUsername(teacherDetails.getNip());
-        userService.edit(user.getId(), user);
 
         return existingTeacher;
     }

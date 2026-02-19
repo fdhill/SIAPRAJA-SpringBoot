@@ -3,15 +3,16 @@ package com.example.siapraja.controller;
 import com.example.siapraja.dto.CompanyDTO;
 import com.example.siapraja.dto.ResponData;
 import com.example.siapraja.model.Company;
+import com.example.siapraja.security.MyUserDetails;
 import com.example.siapraja.service.CompanyService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/api/companies")
@@ -23,18 +24,38 @@ public class CompanyController {
     @Autowired
     private ModelMapper modelMapper;
 
-    // CREATE
-    @PostMapping
-    public ResponseEntity<ResponData<Company>> create(@Valid @RequestBody CompanyDTO companyDTO, Errors errors) {
+    @GetMapping
+    public ResponseEntity<ResponData<Iterable<Company>>> findAll() {
+        ResponData<Iterable<Company>> responseData = new ResponData<>();
+
+        responseData.setPayload(companyService.findAll());
+        responseData.setStatus(true);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponData<Company>> findById(@PathVariable("id") Long id) {
         ResponData<Company> responseData = new ResponData<>();
 
-        if (errors.hasErrors()) {
-            for (ObjectError error : errors.getAllErrors()) {
-                responseData.getMessage().add(error.getDefaultMessage());
-            }
-            responseData.setStatus(false);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
-        }
+        responseData.setPayload(companyService.findById(id));
+        responseData.setStatus(true);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @GetMapping("/myprofile")
+    public ResponseEntity<ResponData<Company>> getMyProfile(Authentication authentication) {
+        ResponData<Company> responseData = new ResponData<>();
+
+        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+
+        responseData.setPayload(companyService.findByUserId(userDetails.getUserId()));
+        responseData.setStatus(true);
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping
+    public ResponseEntity<ResponData<Company>> create(@Valid @RequestBody CompanyDTO companyDTO) {
+        ResponData<Company> responseData = new ResponData<>();
 
         Company company = modelMapper.map(companyDTO, Company.class);
         responseData.setStatus(true);
@@ -43,55 +64,38 @@ public class CompanyController {
         return ResponseEntity.ok(responseData);
     }
 
-    // FIND ALL
-    @GetMapping
-    public ResponseEntity<ResponData<Iterable<Company>>> findAll() {
-        ResponData<Iterable<Company>> responseData = new ResponData<>();
-        responseData.setStatus(true);
-        responseData.setPayload(companyService.findAll());
-        return ResponseEntity.ok(responseData);
-    }
-
-    // FIND BY ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponData<Company>> findById(@PathVariable("id") Long id) {
-        ResponData<Company> responseData = new ResponData<>();
-        Company company = companyService.findById(id);
-        
-        if (company == null) {
-            responseData.setStatus(false);
-            responseData.getMessage().add("Company with ID " + id + " not found");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
-        }
-
-        responseData.setStatus(true);
-        responseData.setPayload(company);
-        return ResponseEntity.ok(responseData);
-    }
-
-    // EDIT / UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<ResponData<Company>> update(@PathVariable("id") Long id, @Valid @RequestBody CompanyDTO companyDTO, Errors errors) {
+    public ResponseEntity<ResponData<Company>> update(@PathVariable("id") Long id,
+            @Valid @RequestBody CompanyDTO companyDTO) {
         ResponData<Company> responseData = new ResponData<>();
 
-        if (errors.hasErrors()) {
-            for (ObjectError error : errors.getAllErrors()) {
-                responseData.getMessage().add(error.getDefaultMessage());
-            }
-            responseData.setStatus(false);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseData);
+        Company company = modelMapper.map(companyDTO, Company.class);
+        responseData.setPayload(companyService.edit(id, company));
+        responseData.setStatus(true);
+        responseData.getMessage().add("Company updated successfully");
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PreAuthorize("hasRole('COMPANY')")
+    @PutMapping("/update-profile")
+    public ResponseEntity<ResponData<Company>> updateMyProfile(
+            @AuthenticationPrincipal MyUserDetails currentUser,
+            @Valid @RequestBody CompanyDTO companyDTO) {
+
+        ResponData<Company> responseData = new ResponData<>();
+
+        Company myCompany = currentUser.getProfileAs(Company.class);
+
+        if (myCompany == null) {
+            throw new RuntimeException("Profil company not found for this user");
         }
 
-        try {
-            Company company = modelMapper.map(companyDTO, Company.class);
-            responseData.setStatus(true);
-            responseData.setPayload(companyService.edit(id, company));
-            responseData.getMessage().add("Company updated successfully");
-            return ResponseEntity.ok(responseData);
-        } catch (RuntimeException e) {
-            responseData.setStatus(false);
-            responseData.getMessage().add(e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseData);
-        }
+        Company companyData = modelMapper.map(companyDTO, Company.class);
+
+        responseData.setPayload(companyService.edit(myCompany.getId(), companyData));
+        responseData.setStatus(true);
+        responseData.getMessage().add("Profile updated successfully");
+
+        return ResponseEntity.ok(responseData);
     }
 }
