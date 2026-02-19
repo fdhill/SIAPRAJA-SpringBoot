@@ -20,24 +20,24 @@ public class PresenceService {
     @Autowired
     private MonitoringService monitoringService;
 
-    public Presence checkIn(Presence presence, Long idUser) {
-        LocalDate today = LocalDate.now();
+    // public Presence checkIn(Presence presence, Long idUser) {
+    //     LocalDate today = LocalDate.now();
 
-        Monitoring monitoring = monitoringService.findStudentMonitoringByIdUser(idUser);
+    //     Monitoring monitoring = monitoringService.findStudentMonitoringByIdUser(idUser);
 
-        if (presenceRepository.findByMonitoringIdAndDate(monitoring.getId(), today).isPresent()) {
-            throw new RuntimeException("You have already checked in today!");
-        }
+    //     if (presenceRepository.findByMonitoringIdAndDate(monitoring.getId(), today).isPresent()) {
+    //         throw new RuntimeException("You have already checked in today!");
+    //     }
 
-        presence.setMonitoring(monitoring);
+    //     presence.setMonitoring(monitoring);
 
-        presence.setDate(today);
-        presence.setCheckinTime(LocalTime.now());
+    //     presence.setDate(today);
+    //     presence.setCheckinTime(LocalTime.now());
 
-        monitoringService.setMonitoringStartDate(monitoring.getId(), today);
+    //     monitoringService.setMonitoringStartDate(monitoring.getId(), today);
 
-        return presenceRepository.save(presence);
-    }
+    //     return presenceRepository.save(presence);
+    // }
 
     public Presence checkOut(Long idUser) {
         LocalDate today = LocalDate.now();

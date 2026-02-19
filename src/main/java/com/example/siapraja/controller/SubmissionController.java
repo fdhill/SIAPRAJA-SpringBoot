@@ -50,12 +50,9 @@ public class SubmissionController {
 
     @PostMapping("/apply")
     public ResponseEntity<ResponData<Submission>> create(@Valid @RequestBody SubmissionDTO submissionDTO, @AuthenticationPrincipal MyUserDetails currentUser) {
-
         ResponData<Submission> responseData = new ResponData<>();
 
-        Long userId = currentUser.getUserId();
-
-        Submission result = submissionService.processApply(userId, submissionDTO.getCompanyId());
+        Submission result = submissionService.processApply(currentUser.getStudentId(), submissionDTO.getCompanyId());
 
         responseData.setStatus(true);
         responseData.setPayload(result);
