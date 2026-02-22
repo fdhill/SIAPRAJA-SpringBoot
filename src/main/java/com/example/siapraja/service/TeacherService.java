@@ -24,7 +24,7 @@ public class TeacherService {
         return teacherRepository.findById(id).orElse(null);
     }
 
-    @PreAuthorize("#id == authentication.principal.userId")
+    @PreAuthorize("hasRole('TEACHER') and #id == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Teacher findByUserId(Long id) {
         return teacherRepository.findByUserId(id)
