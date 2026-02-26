@@ -24,7 +24,7 @@ public class CompanyService {
             .orElseThrow(() -> new RuntimeException("Company with id " + id + " not found!"));
     }
 
-    @PreAuthorize("#id == authentication.principal.userId")
+    @PreAuthorize("hasRole('COMPANY') and #id == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Company findByUserId(Long id) {
         return companyRepository.findByUserId(id)

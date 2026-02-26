@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -12,7 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor // Membuat constructor kosong (wajib untuk JPA)
 @AllArgsConstructor // Membuat constructor dengan semua field
 @Builder // Memungkinkan pembuatan objek gaya Student.builder().name("Andi").build()
-public class Student {
+@EqualsAndHashCode(callSuper = false)
+public class Student extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

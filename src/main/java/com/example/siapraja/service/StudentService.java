@@ -31,7 +31,7 @@ public class StudentService {
         return studentRepository.findById(studentId).orElse(null);
     }
 
-    @PreAuthorize("#userId == authentication.principal.userId")
+    @PreAuthorize("hasRole('STUDENT') and #userId == authentication.principal.userId")
     @Transactional(readOnly = true)
     public Student findByUserId(Long userId) {
         return studentRepository.findByUserId(userId)

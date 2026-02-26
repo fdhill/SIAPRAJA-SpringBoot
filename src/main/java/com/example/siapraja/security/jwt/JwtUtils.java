@@ -11,7 +11,7 @@ import java.util.Date;
 public class JwtUtils {
 
     private final String jwtSecret = "sangatRahasiaSekaliSangatRahasiaSekaliSangatRahasiaSekali";
-    private final int jwtExpirationMs = 86400000; // 24 Jam
+    private final int jwtExpirationMs = 86400000;
 
     private Key key() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());

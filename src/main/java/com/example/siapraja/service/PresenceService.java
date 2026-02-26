@@ -57,7 +57,7 @@ public class PresenceService {
         return presenceRepository.save(presence);
     }
 
-    // @PreAuthorize("hasRole('STUDENT') and #studentId == authentication.principal.studentId")
+    @PreAuthorize("hasRole('STUDENT')")
     public Presence checkOut(Long presenceId) {
 
         Presence presence = presenceRepository.findById(presenceId)
