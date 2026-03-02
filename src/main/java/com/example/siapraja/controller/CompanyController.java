@@ -1,6 +1,7 @@
 package com.example.siapraja.controller;
 
-import com.example.siapraja.dto.CompanyDTO;
+import com.example.siapraja.dto.CompanyRequestDTO;
+import com.example.siapraja.dto.CompanyResponDTO;
 import com.example.siapraja.dto.ResponData;
 import com.example.siapraja.model.Company;
 import com.example.siapraja.security.MyUserDetails;
@@ -25,8 +26,8 @@ public class CompanyController {
     private ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<ResponData<Iterable<Company>>> findAll() {
-        ResponData<Iterable<Company>> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<CompanyResponDTO>>> findAll() {
+        ResponData<Iterable<CompanyResponDTO>> responseData = new ResponData<>();
 
         responseData.setPayload(companyService.findAll());
         responseData.setStatus(true);
@@ -34,8 +35,8 @@ public class CompanyController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponData<Company>> findById(@PathVariable("id") Long id) {
-        ResponData<Company> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<CompanyResponDTO>> findById(@PathVariable("id") Long id) {
+        ResponData<CompanyResponDTO> responseData = new ResponData<>();
 
         responseData.setPayload(companyService.findById(id));
         responseData.setStatus(true);
@@ -43,8 +44,8 @@ public class CompanyController {
     }
 
     @GetMapping("/myprofile")
-    public ResponseEntity<ResponData<Company>> getMyProfile(Authentication authentication) {
-        ResponData<Company> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<CompanyResponDTO>> getMyProfile(Authentication authentication) {
+        ResponData<CompanyResponDTO> responseData = new ResponData<>();
 
         MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
 
@@ -54,23 +55,22 @@ public class CompanyController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponData<Company>> create(@Valid @RequestBody CompanyDTO companyDTO) {
-        ResponData<Company> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<CompanyResponDTO>> create(
+            @Valid @RequestBody CompanyRequestDTO companyRequestDTO) {
+        ResponData<CompanyResponDTO> responseData = new ResponData<>();
 
-        Company company = modelMapper.map(companyDTO, Company.class);
         responseData.setStatus(true);
-        responseData.setPayload(companyService.save(company));
+        responseData.setPayload(companyService.save(companyRequestDTO));
         responseData.getMessage().add("Company created successfully");
         return ResponseEntity.ok(responseData);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponData<Company>> update(@PathVariable("id") Long id,
-            @Valid @RequestBody CompanyDTO companyDTO) {
-        ResponData<Company> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<CompanyResponDTO>> update(@PathVariable("id") Long id,
+            @Valid @RequestBody CompanyRequestDTO companyRequestDTO) {
+        ResponData<CompanyResponDTO> responseData = new ResponData<>();
 
-        Company company = modelMapper.map(companyDTO, Company.class);
-        responseData.setPayload(companyService.edit(id, company));
+        responseData.setPayload(companyService.edit(id, companyRequestDTO));
         responseData.setStatus(true);
         responseData.getMessage().add("Company updated successfully");
         return ResponseEntity.ok(responseData);
@@ -78,21 +78,19 @@ public class CompanyController {
 
     @PreAuthorize("hasRole('COMPANY')")
     @PutMapping("/update-profile")
-    public ResponseEntity<ResponData<Company>> updateMyProfile(
+    public ResponseEntity<ResponData<CompanyResponDTO>> updateMyProfile(
             @AuthenticationPrincipal MyUserDetails currentUser,
-            @Valid @RequestBody CompanyDTO companyDTO) {
+            @Valid @RequestBody CompanyRequestDTO companyRequestDTO) {
 
-        ResponData<Company> responseData = new ResponData<>();
+        ResponData<CompanyResponDTO> responseData = new ResponData<>();
 
-        Company myCompany = currentUser.getProfileAs(Company.class);
+        Long companyId = currentUser.getCompanyId();
 
-        if (myCompany == null) {
-            throw new RuntimeException("Profil company not found for this user");
+        if (companyId == null) {
+            throw new RuntimeException("Profile company not found for this user");
         }
 
-        Company companyData = modelMapper.map(companyDTO, Company.class);
-
-        responseData.setPayload(companyService.edit(myCompany.getId(), companyData));
+        responseData.setPayload(companyService.edit(companyId, companyRequestDTO));
         responseData.setStatus(true);
         responseData.getMessage().add("Profile updated successfully");
 

@@ -1,10 +1,16 @@
 package com.example.siapraja.service;
 
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.siapraja.dto.TeacherRequestDTO;
+import com.example.siapraja.dto.TeacherResponDTO;
 import com.example.siapraja.model.Teacher;
 import com.example.siapraja.model.User;
 import com.example.siapraja.repository.TeacherRepository;
@@ -12,6 +18,10 @@ import com.example.siapraja.repository.TeacherRepository;
 @Service
 @Transactional
 public class TeacherService {
+
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Autowired
     TeacherRepository teacherRepository;
 
@@ -20,51 +30,58 @@ public class TeacherService {
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
-    public Teacher findById(Long id) {
-        return teacherRepository.findById(id).orElse(null);
+    public TeacherResponDTO findById(Long id) {
+        return teacherRepository.findById(id)
+            .map(teacher -> modelMapper.map(teacher, TeacherResponDTO.class))
+            .orElseThrow(() -> new RuntimeException("Teacher with id " + id + " not found!"));
     }
 
     @PreAuthorize("hasRole('TEACHER') and #id == authentication.principal.userId")
     @Transactional(readOnly = true)
-    public Teacher findByUserId(Long id) {
+    public TeacherResponDTO findByUserId(Long id) {
         return teacherRepository.findByUserId(id)
-            .orElseThrow(() -> new RuntimeException("Teacher not found!"));
+            .map(teacher -> modelMapper.map(teacher, TeacherResponDTO.class))
+            .orElseThrow(() -> new RuntimeException("Teacher with user id " + id + " not found!"));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
-    public Iterable<Teacher> findAll() {
-        return teacherRepository.findAll();
+    public Iterable<TeacherResponDTO> findAll() {
+        Iterable<Teacher> teachers = teacherRepository.findAll();
+
+        return StreamSupport.stream(teachers.spliterator(), false)
+        .map(teacher -> modelMapper.map(teacher, TeacherResponDTO.class))
+        .collect(Collectors.toList());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Teacher save(Teacher teacher) {
+    public TeacherResponDTO save(TeacherRequestDTO teacherRequestDTO) {
         User newUser = new User();
-        newUser.setName(teacher.getName());
-        newUser.setUsername(teacher.getNip());
+        newUser.setName(teacherRequestDTO.getName());
+        newUser.setUsername(teacherRequestDTO.getNip());
         newUser.setPassword("123456");
         newUser.setRole(4);
-
         User savedUser = userService.save(newUser);
 
+        Teacher teacher = modelMapper.map(teacherRequestDTO, Teacher.class);
         teacher.setUser(savedUser);
 
-        return teacherRepository.save(teacher);
+        return modelMapper.map(teacherRepository.save(teacher), TeacherResponDTO.class);
     }
 
     @PreAuthorize("hasRole('ADMIN') or (hasRole('TEACHER') and #teacherId == authentication.principal.teacherId)")
-    public Teacher edit(Long teacherId, Teacher teacherDetails) {
+    public TeacherResponDTO edit(Long teacherId, TeacherRequestDTO teacherRequestDTO) {
         Teacher existingTeacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
-        existingTeacher.setName(teacherDetails.getName());
+        existingTeacher.setName(teacherRequestDTO.getName());
 
-        if(teacherDetails.getNip() != null && !teacherRepository.existsByNip(teacherDetails.getNip())){
-            existingTeacher.setNip(teacherDetails.getNip());
+        if(teacherRequestDTO.getNip() != null && !teacherRepository.existsByNip(teacherRequestDTO.getNip())){
+            existingTeacher.setNip(teacherRequestDTO.getNip());
         }
-        existingTeacher.setAddress(teacherDetails.getAddress());
-        existingTeacher.setGender(teacherDetails.getGender());
+        existingTeacher.setAddress(teacherRequestDTO.getAddress());
+        existingTeacher.setGender(teacherRequestDTO.getGender());
 
-        return existingTeacher;
+        return modelMapper.map(teacherRepository.save(existingTeacher), TeacherResponDTO.class);
     }
 }
