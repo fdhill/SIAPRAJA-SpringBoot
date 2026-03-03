@@ -1,19 +1,28 @@
 package com.example.siapraja.service;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.siapraja.dto.SubmissionResponDTO;
 import com.example.siapraja.model.Company;
 import com.example.siapraja.model.Monitoring;
 import com.example.siapraja.model.Student;
 import com.example.siapraja.model.Submission;
+import com.example.siapraja.repository.CompanyRepository;
+import com.example.siapraja.repository.StudentRepository;
 import com.example.siapraja.repository.SubmissionRepository;
 
 @Service
 @Transactional
 public class SubmissionService {
+
+    private final ModelMapper modelMapper;
 
     @Autowired
     SubmissionRepository submissionRepository;
@@ -22,25 +31,39 @@ public class SubmissionService {
     MonitoringService monitoringService;
 
     @Autowired
-    StudentService studentService;
+    StudentRepository studentRepository;
 
     @Autowired
-    CompanyService companyService;
+    CompanyRepository companyRepository;
+
+    SubmissionService(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
 
     @Transactional(readOnly = true)
-    public Submission findById(Long id) {
-        return submissionRepository.findById(id).orElse(null);
+    public SubmissionResponDTO findById(Long id) {
+        return submissionRepository.findById(id)
+            .map(submission -> modelMapper.map(submission, SubmissionResponDTO.class))
+            .orElseThrow(() -> new RuntimeException("Submission with id " + id + " not found"));
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN')")
-    public Iterable<Submission> findAll() {
-        return submissionRepository.findAll();
+    public Iterable<SubmissionResponDTO> findAll() {
+        Iterable<Submission> submissions = submissionRepository.findAll();
+
+        return StreamSupport.stream(submissions.spliterator(), false)
+            .map(submission -> modelMapper.map(submission, SubmissionResponDTO.class))
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public Iterable<Submission> findByStatus(int status) {
-        return submissionRepository.findByStatus(status);
+    public Iterable<SubmissionResponDTO> findByStatus(int status) {
+        Iterable<Submission> submissions = submissionRepository.findByStatus(status);
+
+        return StreamSupport.stream(submissions.spliterator(), false)
+            .map(submission -> modelMapper.map(submission, SubmissionResponDTO.class))
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
