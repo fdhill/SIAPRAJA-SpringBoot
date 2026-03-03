@@ -1,8 +1,11 @@
 package com.example.siapraja.service;
 
+import com.example.siapraja.dto.PresenceResponDTO;
 import com.example.siapraja.model.Monitoring;
 import com.example.siapraja.model.Presence;
+import com.example.siapraja.repository.MonitoringRepository;
 import com.example.siapraja.repository.PresenceRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -10,10 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @Transactional
 public class PresenceService {
+
+    private final ModelMapper modelMapper;
 
     @Autowired
     private PresenceRepository presenceRepository;
@@ -21,27 +28,47 @@ public class PresenceService {
     @Autowired
     private MonitoringService monitoringService;
 
-    @Transactional(readOnly = true)
-    public Iterable<Presence> findAll() {
-        return presenceRepository.findAll();
+    @Autowired
+    private MonitoringRepository monitoringRepository;
+
+    PresenceService(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
     }
 
     @Transactional(readOnly = true)
-    public Iterable<Presence> getHistoryByMonitoringId(Long monitoringId) {
-        return presenceRepository.findByMonitoringIdOrderByDateDesc(monitoringId);
+    public Iterable<PresenceResponDTO> findAll() {
+        Iterable<Presence> presences = presenceRepository.findAll();
+
+        return StreamSupport.stream(presences.spliterator(), false)
+            .map(presence -> modelMapper.map(presence, PresenceResponDTO.class))
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Iterable<PresenceResponDTO> getHistoryByMonitoringId(Long monitoringId) {
+        Iterable<Presence> presences = presenceRepository.findByMonitoringIdOrderByDateDesc(monitoringId);
+
+        return StreamSupport.stream(presences.spliterator(), false)
+            .map(presence -> modelMapper.map(presence, PresenceResponDTO.class))
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("#studentId == authentication.principal.studentId")
-    public Iterable<Presence> findMyPresenceHistoryByStudentId(Long studentId) {
-        return presenceRepository.findByMonitoring_StudentId(studentId);
+    public Iterable<PresenceResponDTO> findMyPresenceHistoryByStudentId(Long studentId) {
+        Iterable<Presence> presences = presenceRepository.findByMonitoring_StudentId(studentId);
+
+        return StreamSupport.stream(presences.spliterator(), false)
+            .map(presence -> modelMapper.map(presence, PresenceResponDTO.class))
+            .collect(Collectors.toList());
     }
 
     @PreAuthorize("hasRole('STUDENT') and #studentId == authentication.principal.studentId")
-    public Presence checkIn(Long studentId, Presence presence) {
+    public PresenceResponDTO checkIn(Long studentId, Presence presence) {
         LocalDate today = LocalDate.now();
 
-        Monitoring monitoring = monitoringService.findByStudentId(studentId);
+        Monitoring monitoring = monitoringRepository.findByStudentId(studentId)
+            .orElseThrow(() -> new RuntimeException("Monitoring with id " + studentId + "not found"));
 
         if (presenceRepository.findByMonitoringIdAndDate(monitoring.getId(), today).isPresent()) {
             throw new RuntimeException("You have already checked in today!");
@@ -54,11 +81,11 @@ public class PresenceService {
 
         monitoringService.setMonitoringStartDate(monitoring.getId(), today);
 
-        return presenceRepository.save(presence);
+        return modelMapper.map(presenceRepository.save(presence), PresenceResponDTO.class);
     }
 
     @PreAuthorize("hasRole('STUDENT')")
-    public Presence checkOut(Long presenceId) {
+    public PresenceResponDTO checkOut(Long presenceId) {
 
         Presence presence = presenceRepository.findById(presenceId)
             .orElseThrow(() -> new RuntimeException("Presence not found!"));
@@ -68,6 +95,6 @@ public class PresenceService {
         }
         presence.setCheckoutTime(LocalTime.now());
 
-        return presence;
+        return modelMapper.map(presenceRepository.save(presence), PresenceResponDTO.class);
     }
 }

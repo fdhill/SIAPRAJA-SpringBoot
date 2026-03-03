@@ -1,5 +1,4 @@
 package com.example.siapraja.service;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -75,9 +74,11 @@ public class SubmissionService {
     }
 
     @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
-    public Submission processApply(Long studentId, Long companyId) {
-        Student student = studentService.findById(studentId);
-        Company company = companyService.findById(companyId);
+    public SubmissionResponDTO processApply(Long studentId, Long companyId) {
+        Student student = studentRepository.findById(studentId)
+            .orElseThrow(() -> new RuntimeException("Student not found"));
+        Company company = companyRepository.findById(companyId)
+            .orElseThrow(() -> new RuntimeException("Company not found"));
 
         if (submissionRepository.hasActiveSubmission(student.getId())) {
             throw new RuntimeException("You cannot apply. You have a pending application or you are already accepted.");
@@ -92,7 +93,7 @@ public class SubmissionService {
         sub.setCompany(company);
         sub.setStatus(1);
 
-        return submissionRepository.save(sub);
+        return modelMapper.map(submissionRepository.save(sub), SubmissionResponDTO.class);
     }
 
 
