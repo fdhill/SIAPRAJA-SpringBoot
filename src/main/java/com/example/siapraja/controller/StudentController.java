@@ -1,6 +1,8 @@
 package com.example.siapraja.controller;
 
 import com.example.siapraja.dto.StudentDTO;
+import com.example.siapraja.dto.StudentRequestDTO;
+import com.example.siapraja.dto.StudentRespontDTO;
 import com.example.siapraja.dto.ResponData;
 import com.example.siapraja.model.Student;
 import com.example.siapraja.security.MyUserDetails;
@@ -27,16 +29,16 @@ public class StudentController {
     private ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<ResponData<Iterable<Student>>> findAll() {
-        ResponData<Iterable<Student>> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<StudentRespontDTO>>> findAll() {
+        ResponData<Iterable<StudentRespontDTO>> responseData = new ResponData<>();
         responseData.setStatus(true);
         responseData.setPayload(studentService.findAll());
         return ResponseEntity.ok(responseData);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponData<Student>> findById(@PathVariable("id") Long id) {
-        ResponData<Student> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<StudentRespontDTO>> findById(@PathVariable("id") Long id) {
+        ResponData<StudentRespontDTO> responseData = new ResponData<>();
 
         responseData.setStatus(true);
         responseData.setPayload(studentService.findById(id));
@@ -44,8 +46,8 @@ public class StudentController {
     }
 
     @GetMapping("/myprofile")
-    public ResponseEntity<ResponData<Student>> getMyProfile(Authentication authentication) {
-        ResponData<Student> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<StudentRespontDTO>> getMyProfile(Authentication authentication) {
+        ResponData<StudentRespontDTO> responseData = new ResponData<>();
 
         MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
 
@@ -55,35 +57,30 @@ public class StudentController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponData<Student>> create(@Valid @RequestBody StudentDTO studentDTO, Errors errors) {
-        ResponData<Student> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<StudentRespontDTO>> create(@Valid @RequestBody StudentRequestDTO studentRequestDTO) {
+        ResponData<StudentRespontDTO> responseData = new ResponData<>();
 
-        Student student = modelMapper.map(studentDTO, Student.class);
         responseData.setStatus(true);
-        responseData.setPayload(studentService.save(student));
+        responseData.setPayload(studentService.save(studentRequestDTO));
         responseData.getMessage().add("Student created successfully");
         return ResponseEntity.ok(responseData);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponData<Student>> update(@PathVariable("id") Long id,
-            @Valid @RequestBody StudentDTO studentDTO) {
-        ResponData<Student> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<StudentRespontDTO>> update(@PathVariable("id") Long id, @Valid @RequestBody StudentRequestDTO studentRequestDTO) {
+        ResponData<StudentRespontDTO> responseData = new ResponData<>();
 
-        Student student = modelMapper.map(studentDTO, Student.class);
         responseData.setStatus(true);
-        responseData.setPayload(studentService.edit(id, student));
+        responseData.setPayload(studentService.edit(id, studentRequestDTO));
         responseData.getMessage().add("Student updated successfully");
         return ResponseEntity.ok(responseData);
     }
 
     @PreAuthorize("hasRole('STUDENT')")
     @PutMapping("/update-profile")
-    public ResponseEntity<ResponData<Student>> updateMyProfile(
-            @AuthenticationPrincipal MyUserDetails currentUser,
-            @Valid @RequestBody StudentDTO studentDTO) {
+    public ResponseEntity<ResponData<StudentRespontDTO>> updateMyProfile( @AuthenticationPrincipal MyUserDetails currentUser, @Valid @RequestBody StudentRequestDTO studentRequestDTO) {
 
-        ResponData<Student> responseData = new ResponData<>();
+        ResponData<StudentRespontDTO> responseData = new ResponData<>();
 
         Student myStudent = currentUser.getProfileAs(Student.class);
 
@@ -91,9 +88,7 @@ public class StudentController {
             throw new RuntimeException("Profil student not found for this user");
         }
 
-        Student studentData = modelMapper.map(studentDTO, Student.class);
-
-        responseData.setPayload(studentService.edit(myStudent.getId(), studentData));
+        responseData.setPayload(studentService.edit(myStudent.getId(), studentRequestDTO));
         responseData.setStatus(true);
         responseData.getMessage().add("Profile updated successfully");
 
