@@ -2,32 +2,40 @@ package com.example.siapraja.service;
 
 import java.time.LocalDate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.modelmapper.ModelMapper;
-import org.modelmapper.internal.bytebuddy.asm.Advice.Return;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.siapraja.dto.MonitoringRequestDTO;
 import com.example.siapraja.dto.MonitoringResponseDTO;
+import com.example.siapraja.model.Company;
 import com.example.siapraja.model.Monitoring;
+import com.example.siapraja.model.Student;
+import com.example.siapraja.model.Teacher;
 import com.example.siapraja.repository.MonitoringRepository;
 
 @Service
 @Transactional
 public class MonitoringService {
 
-    private final ModelMapper modelMapper;
+    @Autowired
+    ModelMapper modelMapper;
 
     @Autowired
     private MonitoringRepository monitoringRepository;
 
-    MonitoringService(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-    }
+    @Autowired
+    StudentService studentService;
+
+    @Autowired
+    CompanyService companyService;
+
+    @Autowired
+    TeacherService teacherService;
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ADMIN')")
@@ -78,41 +86,52 @@ public class MonitoringService {
     @Transactional(readOnly = true)
     @PreAuthorize("#id == authentication.principal.userId")
     public Iterable<MonitoringResponseDTO> findMyMonitoring(Long userId) {
-        return monitoringRepository.findByStudent_User_IdOrTeacher_User_IdOrCompany_User_Id(userId, userId, userId);
+        Iterable<Monitoring> monitorings = monitoringRepository.findByStudent_User_IdOrTeacher_User_IdOrCompany_User_Id(userId, userId, userId);
+
+        return StreamSupport.stream(monitorings.spliterator(), false)
+            .map(monitoring -> modelMapper.map(monitorings, MonitoringResponseDTO.class))
+            .collect(Collectors.toList());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public MonitoringResponseDTO save(Monitoring monitoring) {
-        return monitoringRepository.save(monitoring);
+    public MonitoringResponseDTO save(MonitoringRequestDTO monitoringRequestDTO) {
+
+        Monitoring monitoring = Monitoring.builder()
+            .student(modelMapper.map(studentService.findById(monitoringRequestDTO.getStudentId()), Student.class))
+            .company(modelMapper.map(companyService.findById(monitoringRequestDTO.getCompanyId()), Company.class))
+            .build();
+
+        return modelMapper.map(monitoringRepository.save(monitoring), MonitoringResponseDTO.class);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public MonitoringResponseDTO update(Long id, Monitoring monitoring) {
+    public MonitoringResponseDTO update(Long id, MonitoringRequestDTO monitoringRequestDTO){
         Monitoring existing = monitoringRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Monitoring with ID " + id + " not found"));
 
-        if (monitoring.getStudent() != null) {
-            existing.setStudent(monitoring.getStudent());
+        if (monitoringRequestDTO.getStudentId() != null) {
+            existing.setStudent(modelMapper.map(studentService.findById(monitoringRequestDTO.getStudentId()), Student.class));
         }
-        if (monitoring.getTeacher() != null) {
-            existing.setTeacher(monitoring.getTeacher());
+        if (monitoringRequestDTO.getTeacherId() != null) {
+            existing.setTeacher(modelMapper.map(teacherService.findById(monitoringRequestDTO.getTeacherId()), Teacher.class));
         }
-        if (monitoring.getCompany() != null) {
-            existing.setCompany(monitoring.getCompany());
+        if (monitoringRequestDTO.getCompanyId() != null) {
+            existing.setCompany(modelMapper.map(companyService.findById(monitoringRequestDTO.getCompanyId()), Company.class));
         }
 
-        if (monitoring.getStartDate() != null) {
-            existing.setStartDate(monitoring.getStartDate());
+        if (monitoringRequestDTO.getStartDate() != null) {
+            existing.setStartDate(monitoringRequestDTO.getStartDate());
         }
-        if (monitoring.getEndDate() != null) {
-            existing.setEndDate(monitoring.getEndDate());
+        if (monitoringRequestDTO.getEndDate() != null) {
+            existing.setEndDate(monitoringRequestDTO.getEndDate());
         }
-        return monitoringRepository.save(existing);
+        return modelMapper.map(monitoringRepository.save(existing), MonitoringResponseDTO.class);
     }
 
     @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.studentId)")
     public void setMonitoringStartDate(Long studentId, LocalDate startDate) {
-        Monitoring monitoring = findByStudentId(studentId);
+        Monitoring monitoring = monitoringRepository.findByStudentId(studentId)
+            .orElseThrow(() -> new RuntimeException("Monitoring with student id " + studentId + "nout found"));
         if (monitoring.getStartDate() == null) {
             monitoring.setStartDate(startDate);
         }

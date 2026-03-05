@@ -8,9 +8,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.siapraja.dto.MonitoringRequestDTO;
 import com.example.siapraja.dto.SubmissionResponDTO;
 import com.example.siapraja.model.Company;
-import com.example.siapraja.model.Monitoring;
 import com.example.siapraja.model.Student;
 import com.example.siapraja.model.Submission;
 import com.example.siapraja.repository.CompanyRepository;
@@ -21,7 +21,8 @@ import com.example.siapraja.repository.SubmissionRepository;
 @Transactional
 public class SubmissionService {
 
-    private final ModelMapper modelMapper;
+    @Autowired
+    ModelMapper modelMapper;
 
     @Autowired
     SubmissionRepository submissionRepository;
@@ -34,10 +35,6 @@ public class SubmissionService {
 
     @Autowired
     CompanyRepository companyRepository;
-
-    SubmissionService(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-    }
 
     @Transactional(readOnly = true)
     public SubmissionResponDTO findById(Long id) {
@@ -114,12 +111,12 @@ public class SubmissionService {
 
         company.setQuota(company.getQuota() - 1);
 
-        Monitoring monitoring = Monitoring.builder()
-                .student(sub.getStudent())
-                .company(sub.getCompany())
+        MonitoringRequestDTO monitoringRequestDTO = MonitoringRequestDTO.builder()
+                .studentId(sub.getStudent().getId())
+                .companyId(sub.getCompany().getId())
                 .build();
 
-        monitoringService.save(monitoring);
+        monitoringService.save(monitoringRequestDTO);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

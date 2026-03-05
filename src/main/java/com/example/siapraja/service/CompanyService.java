@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.siapraja.dto.CompanyRequestDTO;
 import com.example.siapraja.dto.CompanyResponDTO;
+import com.example.siapraja.dto.UserRequestDTO;
 import com.example.siapraja.model.Company;
 import com.example.siapraja.model.User;
 import com.example.siapraja.repository.CompanyRepository;
@@ -54,15 +55,15 @@ public class CompanyService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public CompanyResponDTO save(CompanyRequestDTO companyRequestDTO) {
-        Company company = modelMapper.map(companyRequestDTO, Company.class);
-
-        User newUser = new User();
-        newUser.setName(company.getName());
-        newUser.setUsername(company.getName());
+        
+        UserRequestDTO newUser = new UserRequestDTO();
+        newUser.setName(companyRequestDTO.getName());
+        newUser.setUsername(companyRequestDTO.getName());
         newUser.setPassword("123456");
         newUser.setRole(3);
-
-        User savedUser = userService.save(newUser);
+        User savedUser = modelMapper.map(userService.save(newUser), User.class);
+        
+        Company company = modelMapper.map(companyRequestDTO, Company.class);
         company.setUser(savedUser);
 
         return modelMapper.map(companyRepository.save(company), CompanyResponDTO.class);

@@ -1,6 +1,7 @@
 package com.example.siapraja.controller;
 
-import com.example.siapraja.dto.MonitoringDTO;
+import com.example.siapraja.dto.MonitoringRequestDTO;
+import com.example.siapraja.dto.MonitoringResponseDTO;
 import com.example.siapraja.dto.ResponData;
 import com.example.siapraja.model.Company;
 import com.example.siapraja.model.Monitoring;
@@ -22,8 +23,8 @@ public class MonitoringController {
     private MonitoringService monitoringService;
 
     @GetMapping
-    public ResponseEntity<ResponData<Iterable<Monitoring>>> findAll() {
-        ResponData<Iterable<Monitoring>> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<MonitoringResponseDTO>>> findAll() {
+        ResponData<Iterable<MonitoringResponseDTO>> responseData = new ResponData<>();
 
         responseData.setStatus(true);
         responseData.setPayload(monitoringService.findAll());
@@ -31,8 +32,8 @@ public class MonitoringController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponData<Monitoring>> findById(@PathVariable("id") Long id) {
-        ResponData<Monitoring> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<MonitoringResponseDTO>> findById(@PathVariable("id") Long id) {
+        ResponData<MonitoringResponseDTO> responseData = new ResponData<>();
 
         responseData.setStatus(true);
         responseData.setPayload(monitoringService.findById(id));
@@ -40,8 +41,8 @@ public class MonitoringController {
     }
 
     @GetMapping("/mymonitoring")
-    public ResponseEntity<ResponData<Iterable<Monitoring>>> findByUserId(Authentication authentication) {
-        ResponData<Iterable<Monitoring>> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<MonitoringResponseDTO>>> findByUserId(Authentication authentication) {
+        ResponData<Iterable<MonitoringResponseDTO>> responseData = new ResponData<>();
 
         MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
 
@@ -51,64 +52,49 @@ public class MonitoringController {
     }
 
     @GetMapping("/student/mymonitoring")
-    public ResponseEntity<ResponData<Monitoring>> findByStudentId(@AuthenticationPrincipal MyUserDetails currentUser) {
-        ResponData<Monitoring> responseData = new ResponData<>();
-        Monitoring monitoring = monitoringService.findByStudentId(currentUser.getStudentId());
+    public ResponseEntity<ResponData<MonitoringResponseDTO>> findByStudentId(@AuthenticationPrincipal MyUserDetails currentUser) {
+        ResponData<MonitoringResponseDTO> responseData = new ResponData<>();
 
         responseData.setStatus(true);
-        responseData.setPayload(monitoring);
+        responseData.setPayload(monitoringService.findByStudentId(currentUser.getStudentId()));
         responseData.getMessage().add("Monitoring data retrieved successfully");
         return ResponseEntity.ok(responseData);
     }
 
     @GetMapping("/teacher/mymonitoring")
-    public ResponseEntity<ResponData<Iterable<Monitoring>>> findByTeacherId(@AuthenticationPrincipal MyUserDetails currentUser) {
-        ResponData<Iterable<Monitoring>> responseData = new ResponData<>();
-        Iterable<Monitoring> data = monitoringService.findByTeacherId(currentUser.getTeacherId());
+    public ResponseEntity<ResponData<Iterable<MonitoringResponseDTO>>> findByTeacherId(@AuthenticationPrincipal MyUserDetails currentUser) {
+        ResponData<Iterable<MonitoringResponseDTO>> responseData = new ResponData<>();
 
-        responseData.setPayload(data);
+        responseData.setPayload(monitoringService.findByTeacherId(currentUser.getTeacherId()));
         responseData.setStatus(true);
         return ResponseEntity.ok(responseData);
     }
 
     @GetMapping("/company/mymonitoring")
-    public ResponseEntity<ResponData<Iterable<Monitoring>>> findByCompanyId(@AuthenticationPrincipal MyUserDetails currentUser) {
-        ResponData<Iterable<Monitoring>> responseData = new ResponData<>();
-        Iterable<Monitoring> data = monitoringService.findByCompanyId(currentUser.getCompanyId());
+    public ResponseEntity<ResponData<Iterable<MonitoringResponseDTO>>> findByCompanyId(@AuthenticationPrincipal MyUserDetails currentUser) {
+        ResponData<Iterable<MonitoringResponseDTO>> responseData = new ResponData<>();
 
-        responseData.setPayload(data);
+        responseData.setPayload(monitoringService.findByCompanyId(currentUser.getCompanyId()));
         responseData.setStatus(true);
         return ResponseEntity.ok(responseData);
     }
 
     @PostMapping
-    public ResponseEntity<ResponData<Monitoring>> create(@Valid @RequestBody MonitoringDTO monitoringDTO) {
-        ResponData<Monitoring> responseData = new ResponData<>();
-
-        Monitoring monitoring = new Monitoring();
-
-        Student student = new Student();
-        student.setId(monitoringDTO.getStudentId());
-        monitoring.setStudent(student);
-
-        Company company = new Company();
-        company.setId(monitoringDTO.getCompanyId());
-        monitoring.setCompany(company);
-
-        Monitoring savedMonitoring = monitoringService.save(monitoring);
+    public ResponseEntity<ResponData<MonitoringResponseDTO>> create(@Valid @RequestBody MonitoringRequestDTO monitoringRequestDTO) {
+        ResponData<MonitoringResponseDTO> responseData = new ResponData<>();
 
         responseData.setStatus(true);
-        responseData.setPayload(savedMonitoring);
+        responseData.setPayload(monitoringService.save(monitoringRequestDTO));
         responseData.getMessage().add("Monitoring record created successfully");
         return ResponseEntity.ok(responseData);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponData<Monitoring>> update(@PathVariable("id") Long id, @RequestBody Monitoring monitoring) {
-        ResponData<Monitoring> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<MonitoringResponseDTO>> update(@PathVariable("id") Long id, @RequestBody MonitoringRequestDTO monitoringRequestDTO) {
+        ResponData<MonitoringResponseDTO> responseData = new ResponData<>();
         
         responseData.setStatus(true);
-        responseData.setPayload(monitoringService.update(id, monitoring));
+        responseData.setPayload(monitoringService.update(id, monitoringRequestDTO));
         responseData.getMessage().add("Monitoring updated successfully");
         return ResponseEntity.ok(responseData);
     }

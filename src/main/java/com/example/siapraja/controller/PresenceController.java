@@ -8,9 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.siapraja.dto.PresenceDTO;
+import com.example.siapraja.dto.PresenceRequestDTO;
+import com.example.siapraja.dto.PresenceResponDTO;
 import com.example.siapraja.dto.ResponData;
-import com.example.siapraja.model.Presence;
 import com.example.siapraja.security.MyUserDetails;
 import com.example.siapraja.service.PresenceService;
 import com.example.siapraja.service.MonitoringService;
@@ -31,8 +31,8 @@ public class PresenceController {
     private ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<ResponData<Iterable<Presence>>> findAll() {
-        ResponData<Iterable<Presence>> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<PresenceResponDTO>>> findAll() {
+        ResponData<Iterable<PresenceResponDTO>> responseData = new ResponData<>();
 
         responseData.setStatus(true);
         responseData.setPayload(presenceService.findAll());
@@ -40,8 +40,8 @@ public class PresenceController {
     }
 
     @GetMapping("/history/{monitoringId}")
-    public ResponseEntity<ResponData<Iterable<Presence>>> getHistory(@PathVariable("monitoringId") Long monitoringId) {
-        ResponData<Iterable<Presence>> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<PresenceResponDTO>>> getHistory(@PathVariable("monitoringId") Long monitoringId) {
+        ResponData<Iterable<PresenceResponDTO>> responseData = new ResponData<>();
         responseData.setStatus(true);
         responseData.setPayload(presenceService.getHistoryByMonitoringId(monitoringId));
         responseData.setMessage(Collections.singletonList("History retrieved successfully"));
@@ -49,8 +49,8 @@ public class PresenceController {
     }
 
     @GetMapping("/mypresences")
-    public ResponseEntity<ResponData<Iterable<Presence>>> getMyPresenceHistory(@AuthenticationPrincipal MyUserDetails currentUser) {
-        ResponData<Iterable<Presence>> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<PresenceResponDTO>>> getMyPresenceHistory(@AuthenticationPrincipal MyUserDetails currentUser) {
+        ResponData<Iterable<PresenceResponDTO>> responseData = new ResponData<>();
 
         responseData.setStatus(true);
         responseData.setPayload(presenceService.findMyPresenceHistoryByStudentId(currentUser.getStudentId()));
@@ -59,19 +59,18 @@ public class PresenceController {
     }
 
     @PostMapping("/checkin")
-    public ResponseEntity<ResponData<Presence>> checkIn(@Valid @RequestBody PresenceDTO presenceDTO, @AuthenticationPrincipal MyUserDetails currentUser) {
-        ResponData<Presence> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<PresenceResponDTO>> checkIn(@Valid @RequestBody PresenceRequestDTO presenceRequestDTO, @AuthenticationPrincipal MyUserDetails currentUser) {
+        ResponData<PresenceResponDTO> responseData = new ResponData<>();
 
-        Presence presence = modelMapper.map(presenceDTO, Presence.class);
         responseData.setStatus(true);
-        responseData.setPayload(presenceService.checkIn(currentUser.getStudentId(), presence));
+        responseData.setPayload(presenceService.checkIn(currentUser.getStudentId(), presenceRequestDTO));
         responseData.setMessage(Collections.singletonList("Check-in successful"));
         return ResponseEntity.ok(responseData);
     }
 
     @PutMapping("/checkout/{presenceId}")
-    public ResponseEntity<ResponData<Presence>> checkOut(@PathVariable("presenceId") Long presenceId) {
-        ResponData<Presence> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<PresenceResponDTO>> checkOut(@PathVariable("presenceId") Long presenceId) {
+        ResponData<PresenceResponDTO> responseData = new ResponData<>();
 
         responseData.setStatus(true);
         responseData.setPayload(presenceService.checkOut(presenceId));

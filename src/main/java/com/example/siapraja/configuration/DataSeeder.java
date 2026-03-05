@@ -40,25 +40,25 @@ public class DataSeeder {
                 System.out.println("Memulai seeding data dengan otorisasi sistem...");
 
                 // 1. Simpan Admin dulu
-                userRepository.save(User.builder()
-                        .name("Administrator")
-                        .username("admin")
-                        .password(encoder.encode("admin"))
-                        .role(1).build());
+                // userRepository.save(User.builder()
+                //         .name("Administrator")
+                //         .username("admin")
+                //         .password(encoder.encode("admin"))
+                //         .role(1).build());
 
-                // 2. Simpan Siswa via Service
-                studentService.save(new Student("Andi", "001", "Solo", "XII-RPL-1", 'M', null));
-                studentService.save(new Student("Bella", "002", "Solo", "XII-RPL-1", 'F', null));
+                // // 2. Simpan Siswa via Service
+                // studentService.save(new Student("Andi", "001", "Solo", "XII-RPL-1", 'M', null));
+                // studentService.save(new Student("Bella", "002", "Solo", "XII-RPL-1", 'F', null));
 
-                // 3. Simpan Guru via Service
-                teacherService.save(Teacher.builder()
-                        .name("Budi Santoso").nip("19850101").address("Jl. Merdeka 1").gender('M').build());
+                // // 3. Simpan Guru via Service
+                // teacherService.save(Teacher.builder()
+                //         .name("Budi Santoso").nip("19850101").address("Jl. Merdeka 1").gender('M').build());
 
-                // 4. Simpan Company via Service
-                companyService.save(Company.builder()
-                        .name("PT Teknologi Maju").address("Jakarta").phone("021-111").quota(5).build());
+                // // 4. Simpan Company via Service
+                // companyService.save(Company.builder()
+                //         .name("PT Teknologi Maju").address("Jakarta").phone("021-111").quota(5).build());
 
-                System.out.println("Seeding selesai!");
+                // System.out.println("Seeding selesai!");
 
             } finally {
                 // Hapus otorisasi setelah selesai agar kembali bersih
