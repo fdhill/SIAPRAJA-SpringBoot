@@ -1,5 +1,6 @@
 package com.example.siapraja.service;
 
+import com.example.siapraja.dto.PresenceRequestDTO;
 import com.example.siapraja.dto.PresenceResponDTO;
 import com.example.siapraja.model.Monitoring;
 import com.example.siapraja.model.Presence;
@@ -20,7 +21,8 @@ import java.util.stream.StreamSupport;
 @Transactional
 public class PresenceService {
 
-    private final ModelMapper modelMapper;
+    @Autowired
+    ModelMapper modelMapper;
 
     @Autowired
     private PresenceRepository presenceRepository;
@@ -30,10 +32,6 @@ public class PresenceService {
 
     @Autowired
     private MonitoringRepository monitoringRepository;
-
-    PresenceService(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-    }
 
     @Transactional(readOnly = true)
     public Iterable<PresenceResponDTO> findAll() {
@@ -64,7 +62,7 @@ public class PresenceService {
     }
 
     @PreAuthorize("hasRole('STUDENT') and #studentId == authentication.principal.studentId")
-    public PresenceResponDTO checkIn(Long studentId, Presence presence) {
+    public PresenceResponDTO checkIn(Long studentId, PresenceRequestDTO presenceRequestDTO) {
         LocalDate today = LocalDate.now();
 
         Monitoring monitoring = monitoringRepository.findByStudentId(studentId)
@@ -73,6 +71,8 @@ public class PresenceService {
         if (presenceRepository.findByMonitoringIdAndDate(monitoring.getId(), today).isPresent()) {
             throw new RuntimeException("You have already checked in today!");
         }
+
+        Presence presence = modelMapper.map(presenceRequestDTO, Presence.class);
 
         presence.setMonitoring(monitoring);
 

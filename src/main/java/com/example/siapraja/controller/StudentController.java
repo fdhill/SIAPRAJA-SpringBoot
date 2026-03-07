@@ -1,6 +1,5 @@
 package com.example.siapraja.controller;
 
-import com.example.siapraja.dto.StudentDTO;
 import com.example.siapraja.dto.StudentRequestDTO;
 import com.example.siapraja.dto.StudentRespontDTO;
 import com.example.siapraja.dto.ResponData;
@@ -15,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

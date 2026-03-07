@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.siapraja.dto.TeacherRequestDTO;
 import com.example.siapraja.dto.TeacherResponDTO;
+import com.example.siapraja.dto.UserRequestDTO;
 import com.example.siapraja.model.Teacher;
 import com.example.siapraja.model.User;
 import com.example.siapraja.repository.TeacherRepository;
@@ -56,12 +57,12 @@ public class TeacherService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public TeacherResponDTO save(TeacherRequestDTO teacherRequestDTO) {
-        User newUser = new User();
+        UserRequestDTO newUser = new UserRequestDTO();
         newUser.setName(teacherRequestDTO.getName());
         newUser.setUsername(teacherRequestDTO.getNip());
         newUser.setPassword("123456");
         newUser.setRole(4);
-        User savedUser = userService.save(newUser);
+        User savedUser = modelMapper.map(userService.save(newUser), User.class);
 
         Teacher teacher = modelMapper.map(teacherRequestDTO, Teacher.class);
         teacher.setUser(savedUser);

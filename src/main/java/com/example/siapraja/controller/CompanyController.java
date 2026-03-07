@@ -3,7 +3,6 @@ package com.example.siapraja.controller;
 import com.example.siapraja.dto.CompanyRequestDTO;
 import com.example.siapraja.dto.CompanyResponDTO;
 import com.example.siapraja.dto.ResponData;
-import com.example.siapraja.model.Company;
 import com.example.siapraja.security.MyUserDetails;
 import com.example.siapraja.service.CompanyService;
 import jakarta.validation.Valid;

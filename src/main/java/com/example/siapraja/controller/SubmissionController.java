@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.siapraja.dto.ResponData;
-import com.example.siapraja.dto.SubmissionDTO;
-import com.example.siapraja.model.Submission;
+import com.example.siapraja.dto.SubmissionRequestDTO;
+import com.example.siapraja.dto.SubmissionResponDTO;
 import com.example.siapraja.security.MyUserDetails;
 import com.example.siapraja.service.SubmissionService;
 
@@ -33,29 +33,27 @@ public class SubmissionController {
     private ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<ResponData<Iterable<Submission>>> findAll() {
-        ResponData<Iterable<Submission>> response = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<SubmissionResponDTO>>> findAll() {
+        ResponData<Iterable<SubmissionResponDTO>> response = new ResponData<>();
         response.setStatus(true);
         response.setPayload(submissionService.findAll());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/status/{status}")
-    public ResponseEntity<ResponData<Iterable<Submission>>> findByStatus(@PathVariable("status") int status) {
-        ResponData<Iterable<Submission>> response = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<SubmissionResponDTO>>> findByStatus(@PathVariable("status") int status) {
+        ResponData<Iterable<SubmissionResponDTO>> response = new ResponData<>();
         response.setStatus(true);
         response.setPayload(submissionService.findByStatus(status));
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/apply")
-    public ResponseEntity<ResponData<Submission>> create(@Valid @RequestBody SubmissionDTO submissionDTO, @AuthenticationPrincipal MyUserDetails currentUser) {
-        ResponData<Submission> responseData = new ResponData<>();
-
-        Submission result = submissionService.processApply(currentUser.getStudentId(), submissionDTO.getCompanyId());
+    public ResponseEntity<ResponData<SubmissionResponDTO>> create(@Valid @RequestBody SubmissionRequestDTO submissionRequestDTO, @AuthenticationPrincipal MyUserDetails currentUser) {
+        ResponData<SubmissionResponDTO> responseData = new ResponData<>();
 
         responseData.setStatus(true);
-        responseData.setPayload(result);
+        responseData.setPayload(submissionService.processApply(currentUser.getStudentId(), submissionRequestDTO.getCompanyId()));
         responseData.getMessage().add("Application submitted successfully");
         return ResponseEntity.ok(responseData);
     }

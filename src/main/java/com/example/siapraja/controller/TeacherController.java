@@ -7,7 +7,6 @@ import com.example.siapraja.model.Teacher;
 import com.example.siapraja.security.MyUserDetails;
 import com.example.siapraja.service.TeacherService;
 import jakarta.validation.Valid;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,9 +20,6 @@ public class TeacherController {
 
     @Autowired
     private TeacherService teacherService;
-
-    @Autowired
-    private ModelMapper modelMapper;
 
     @GetMapping
     public ResponseEntity<ResponData<Iterable<TeacherResponDTO>>> findAll() {

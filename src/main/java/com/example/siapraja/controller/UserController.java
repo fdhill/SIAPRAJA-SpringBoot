@@ -1,8 +1,8 @@
 package com.example.siapraja.controller;
 
-import com.example.siapraja.dto.UserDTO;
+import com.example.siapraja.dto.UserRequestDTO;
+import com.example.siapraja.dto.UserResponDTO;
 import com.example.siapraja.dto.ResponData;
-import com.example.siapraja.model.User;
 import com.example.siapraja.security.MyUserDetails;
 import com.example.siapraja.service.UserService;
 import jakarta.validation.Valid;
@@ -11,7 +11,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,8 +24,8 @@ public class UserController {
     private ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<ResponData<Iterable<User>>> findAll() {
-        ResponData<Iterable<User>> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<Iterable<UserResponDTO>>> findAll() {
+        ResponData<Iterable<UserResponDTO>> responseData = new ResponData<>();
 
         responseData.setStatus(true);
         responseData.setPayload(userService.findAll());
@@ -34,8 +33,8 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponData<User>> findById(@PathVariable("id") Long id) {
-        ResponData<User> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<UserResponDTO>> findById(@PathVariable("id") Long id) {
+        ResponData<UserResponDTO> responseData = new ResponData<>();
 
         responseData.setStatus(true);
         responseData.setPayload(userService.findById(id));
@@ -43,8 +42,8 @@ public class UserController {
     }
 
     @GetMapping("/myaccount")
-    public ResponseEntity<ResponData<User>> getMyAccount(@AuthenticationPrincipal MyUserDetails currentUser){
-        ResponData<User> responData = new ResponData<>();
+    public ResponseEntity<ResponData<UserResponDTO>> getMyAccount(@AuthenticationPrincipal MyUserDetails currentUser){
+        ResponData<UserResponDTO> responData = new ResponData<>();
 
         responData.setPayload(userService.findById(currentUser.getUserId()));
         responData.setStatus(true);
@@ -52,37 +51,31 @@ public class UserController {
     }
     
     @PostMapping
-    public ResponseEntity<ResponData<User>> create(@Valid @RequestBody UserDTO userDTO, Errors errors) {
-        ResponData<User> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<UserResponDTO>> create(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+        ResponData<UserResponDTO> responseData = new ResponData<>();
 
-        User user = modelMapper.map(userDTO, User.class);
         responseData.setStatus(true);
-        responseData.setPayload(userService.save(user));
+        responseData.setPayload(userService.save(userRequestDTO));
         responseData.getMessage().add("User created successfully");
         return ResponseEntity.ok(responseData);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponData<User>> update(@PathVariable("id") Long id, @Valid @RequestBody UserDTO userDTO, Errors errors) {
-        ResponData<User> responseData = new ResponData<>();
+    public ResponseEntity<ResponData<UserResponDTO>> update(@PathVariable("id") Long id, @Valid @RequestBody UserRequestDTO userRequestDTO) {
+        ResponData<UserResponDTO> responseData = new ResponData<>();
 
-        User user = modelMapper.map(userDTO, User.class);
         responseData.setStatus(true);
-        responseData.setPayload(userService.edit(id, user));
+        responseData.setPayload(userService.edit(id, userRequestDTO));
         responseData.getMessage().add("User updated successfully");
         return ResponseEntity.ok(responseData);
     }
 
     @PutMapping("/update-account")
-    public ResponseEntity<ResponData<User>> updateMyaccount(
-            @AuthenticationPrincipal MyUserDetails currentUser,
-            @Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<ResponData<UserResponDTO>> updateMyaccount(@AuthenticationPrincipal MyUserDetails currentUser, @Valid @RequestBody UserRequestDTO userRequestDTO) {
 
-        ResponData<User> responseData = new ResponData<>();
+        ResponData<UserResponDTO> responseData = new ResponData<>();
 
-        User userData = modelMapper.map(userDTO, User.class);
-
-        responseData.setPayload(userService.edit(currentUser.getUserId(), userData));
+        responseData.setPayload(userService.edit(currentUser.getUserId(), userRequestDTO));
         responseData.setStatus(true);
         responseData.getMessage().add("Profile updated successfully");
 
