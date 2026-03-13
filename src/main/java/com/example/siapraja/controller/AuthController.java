@@ -4,6 +4,7 @@ import com.example.siapraja.dto.ResponData;
 import com.example.siapraja.dto.LoginRequest;
 import com.example.siapraja.security.MyUserDetails;
 import com.example.siapraja.security.jwt.JwtUtils;
+import com.example.siapraja.service.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,11 +27,17 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private final MyUserDetailsService myUserDetailsService;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    AuthController(MyUserDetailsService myUserDetailsService) {
+        this.myUserDetailsService = myUserDetailsService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ResponData<Map<String, String>>> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -55,6 +62,7 @@ public class AuthController {
             payload.put("token", jwt);
             payload.put("type", "Bearer");
             payload.put("roles", roles.toString());
+            payload.put("name", userDetails.getUser().getName());
 
             responseData.setStatus(true);
             responseData.setPayload(payload);

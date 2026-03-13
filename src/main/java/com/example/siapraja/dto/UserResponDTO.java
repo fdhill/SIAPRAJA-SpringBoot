@@ -8,6 +8,6 @@ public class UserResponDTO {
 
     private String name;
 
-    private String username;
+    private String usiername;
 
 }
